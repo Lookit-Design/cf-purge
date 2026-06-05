@@ -1,0 +1,16 @@
+# Files and directories that should never ship in the distributed plugin.
+.git/
+.github/
+.idea/
+bin/
+tests/
+node_modules/
+vendor/
+.gitignore
+.distignore
+.phpunit.result.cache
+.php-cs-fixer.cache
+composer.json
+composer.lock
+phpcs.xml.dist
+phpunit.xml.dist

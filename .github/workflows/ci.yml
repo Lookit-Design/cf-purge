@@ -61,11 +61,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Build distributable copy
+        run: |
+          mkdir -p "${{ runner.temp }}/dist/lookit-cf-purge"
+          rsync -a --exclude-from=.distignore ./ "${{ runner.temp }}/dist/lookit-cf-purge/"
+
       - name: Run Plugin Check
         uses: wordpress/plugin-check-action@v1
         with:
-          build-dir: '.'
-          exclude-directories: 'tests,bin,vendor,node_modules'
+          build-dir: ${{ runner.temp }}/dist/lookit-cf-purge
 
   test:
     name: Tests (WP ${{ matrix.wp }} / PHP ${{ matrix.php }})
@@ -101,6 +105,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install Subversion
+        run: sudo apt-get update && sudo apt-get install -y subversion
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
