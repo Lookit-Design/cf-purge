@@ -4,9 +4,9 @@ defined( 'ABSPATH' ) || exit;
 class Lookit_CF_Purge_Admin_Bar {
 
 	public static function init() {
-		add_action( 'admin_bar_menu',        array( __CLASS__, 'add_purge_button' ), 999 );
+		add_action( 'admin_bar_menu', array( __CLASS__, 'add_purge_button' ), 999 );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
-		add_action( 'wp_enqueue_scripts',    array( __CLASS__, 'enqueue_assets' ) );
+		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
 	}
 
 	public static function add_purge_button( WP_Admin_Bar $wp_admin_bar ) {
@@ -17,42 +17,53 @@ class Lookit_CF_Purge_Admin_Bar {
 
 		$current_url = self::get_current_url();
 
-		$wp_admin_bar->add_node( array(
-			'id'    => 'lookit-cf-purge-group',
-			'title' => '☁ CF Purge',
-			'href'  => false,
-			'meta'  => array( 'class' => 'lookit-cf-purge-top-level' ),
-		) );
+		$wp_admin_bar->add_node(
+			array(
+				'id'    => 'lookit-cf-purge-group',
+				'title' => '☁ CF Purge',
+				'href'  => false,
+				'meta'  => array( 'class' => 'lookit-cf-purge-top-level' ),
+			)
+		);
 
 		if ( $current_url ) {
-			$wp_admin_bar->add_node( array(
-				'id'     => 'lookit-cf-purge-url',
-				'parent' => 'lookit-cf-purge-group',
-				'title'  => 'Purge This URL',
-				'href'   => 'javascript:void(0)',
-				'meta'   => array( 'title' => $current_url ),
-			) );
+			$wp_admin_bar->add_node(
+				array(
+					'id'     => 'lookit-cf-purge-url',
+					'parent' => 'lookit-cf-purge-group',
+					'title'  => 'Purge This URL',
+					'href'   => 'javascript:void(0)',
+					'meta'   => array( 'title' => $current_url ),
+				)
+			);
 		}
 
-		$wp_admin_bar->add_node( array(
-			'id'     => 'lookit-cf-purge-all',
-			'parent' => 'lookit-cf-purge-group',
-			'title'  => 'Purge Entire Site',
-			'href'   => 'javascript:void(0)',
-		) );
+		$wp_admin_bar->add_node(
+			array(
+				'id'     => 'lookit-cf-purge-all',
+				'parent' => 'lookit-cf-purge-group',
+				'title'  => 'Purge Entire Site',
+				'href'   => 'javascript:void(0)',
+			)
+		);
 
-		$wp_admin_bar->add_node( array(
-			'id'     => 'lookit-cf-purge-manual',
-			'parent' => 'lookit-cf-purge-group',
-			'title'  => self::manual_input_html(),
-			'href'   => false,
-			'meta'   => array( 'class' => 'lookit-cf-manual-wrap' ),
-		) );
+		$wp_admin_bar->add_node(
+			array(
+				'id'     => 'lookit-cf-purge-manual',
+				'parent' => 'lookit-cf-purge-group',
+				'title'  => self::manual_input_html(),
+				'href'   => false,
+				'meta'   => array( 'class' => 'lookit-cf-manual-wrap' ),
+			)
+		);
 
 		$hook = is_admin() ? 'admin_footer' : 'wp_footer';
-		add_action( $hook, function() use ( $current_url ) {
-			self::print_inline_data( $current_url );
-		} );
+		add_action(
+			$hook,
+			function () use ( $current_url ) {
+				self::print_inline_data( $current_url );
+			}
+		);
 	}
 
 	private static function get_current_url(): string {
@@ -66,11 +77,21 @@ class Lookit_CF_Purge_Admin_Bar {
 			return '';
 		}
 
-		if ( is_singular() )        return (string) get_permalink();
-		if ( is_tax() || is_category() || is_tag() ) return (string) get_term_link( get_queried_object() );
-		if ( is_post_type_archive() ) return (string) get_post_type_archive_link( get_queried_object()->name );
-		if ( is_author() )          return (string) get_author_posts_url( get_queried_object_id() );
-		if ( is_home() || is_front_page() ) return (string) home_url( '/' );
+		if ( is_singular() ) {
+			return (string) get_permalink();
+		}
+		if ( is_tax() || is_category() || is_tag() ) {
+			return (string) get_term_link( get_queried_object() );
+		}
+		if ( is_post_type_archive() ) {
+			return (string) get_post_type_archive_link( get_queried_object()->name );
+		}
+		if ( is_author() ) {
+			return (string) get_author_posts_url( get_queried_object_id() );
+		}
+		if ( is_home() || is_front_page() ) {
+			return (string) home_url( '/' );
+		}
 
 		global $wp;
 		return home_url( $wp->request ? '/' . $wp->request . '/' : '/' );
@@ -95,8 +116,12 @@ class Lookit_CF_Purge_Admin_Bar {
 
 	public static function enqueue_assets() {
 
-		if ( ! is_admin_bar_showing() ) return;
-		if ( ! current_user_can( 'manage_options' ) ) return;
+		if ( ! is_admin_bar_showing() ) {
+			return;
+		}
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
 
 		$css = '
 			#wp-admin-bar-lookit-cf-purge-group > .ab-item {
@@ -375,7 +400,7 @@ class Lookit_CF_Purge_Admin_Bar {
 					}
 				};
 				var body = 'action=' + encodeURIComponent(action) +
-				           '&nonce=' + encodeURIComponent(LOOKIT_CF.nonce);
+							'&nonce=' + encodeURIComponent(LOOKIT_CF.nonce);
 				if ( url ) body += '&url=' + encodeURIComponent(url);
 				xhr.send(body);
 			}

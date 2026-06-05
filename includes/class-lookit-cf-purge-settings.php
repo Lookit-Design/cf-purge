@@ -53,9 +53,9 @@ class Lookit_CF_Purge_Settings {
 	}
 
 	public static function sanitize_settings( $input ) {
-		$sanitized = array();
+		$sanitized              = array();
 		$sanitized['api_token'] = isset( $input['api_token'] ) ? sanitize_text_field( trim( $input['api_token'] ) ) : '';
-		$sanitized['zone_id']   = isset( $input['zone_id'] )   ? sanitize_text_field( trim( $input['zone_id'] ) )   : '';
+		$sanitized['zone_id']   = isset( $input['zone_id'] ) ? sanitize_text_field( trim( $input['zone_id'] ) ) : '';
 		return $sanitized;
 	}
 
@@ -125,7 +125,7 @@ class Lookit_CF_Purge_Settings {
 				<?php esc_html_e( 'Lookit CF Purge — Settings', 'lookit-cf-purge' ); ?>
 			</h1>
 
-			<?php if ( $test_result !== null ) : ?>
+			<?php if ( null !== $test_result ) : ?>
 				<div class="notice notice-<?php echo $test_result['success'] ? 'success' : 'error'; ?> is-dismissible">
 					<p><?php echo esc_html( $test_result['message'] ); ?></p>
 				</div>
@@ -165,7 +165,7 @@ class Lookit_CF_Purge_Settings {
 	}
 
 	public static function enqueue_admin_styles( $hook ) {
-		if ( $hook !== 'settings_page_lookit-cf-purge' ) {
+		if ( 'settings_page_lookit-cf-purge' !== $hook ) {
 			return;
 		}
 	}
