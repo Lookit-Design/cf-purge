@@ -13,13 +13,13 @@
 defined( 'ABSPATH' ) || exit;
 
 define( 'LOOKIT_CF_PURGE_VERSION', '1.0.0' );
-define( 'LOOKIT_CF_PURGE_DIR',     plugin_dir_path( __FILE__ ) );
-define( 'LOOKIT_CF_PURGE_URL',     plugin_dir_url( __FILE__ ) );
+define( 'LOOKIT_CF_PURGE_DIR', plugin_dir_path( __FILE__ ) );
+define( 'LOOKIT_CF_PURGE_URL', plugin_dir_url( __FILE__ ) );
 
-require_once LOOKIT_CF_PURGE_DIR . 'includes/class-settings.php';
-require_once LOOKIT_CF_PURGE_DIR . 'includes/class-cloudflare-api.php';
-require_once LOOKIT_CF_PURGE_DIR . 'includes/class-admin-bar.php';
-require_once LOOKIT_CF_PURGE_DIR . 'includes/class-ajax-handler.php';
+require_once LOOKIT_CF_PURGE_DIR . 'includes/class-lookit-cf-purge-settings.php';
+require_once LOOKIT_CF_PURGE_DIR . 'includes/class-lookit-cf-purge-cloudflare-api.php';
+require_once LOOKIT_CF_PURGE_DIR . 'includes/class-lookit-cf-purge-admin-bar.php';
+require_once LOOKIT_CF_PURGE_DIR . 'includes/class-lookit-cf-purge-ajax-handler.php';
 
 add_action( 'plugins_loaded', array( 'Lookit_CF_Purge_Settings', 'init' ) );
 add_action( 'plugins_loaded', array( 'Lookit_CF_Purge_Admin_Bar', 'init' ) );

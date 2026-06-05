@@ -11,7 +11,10 @@ class Lookit_CF_Purge_Cloudflare_Api {
 	public static function purge_url( string $url ): array {
 
 		if ( ! Lookit_CF_Purge_Settings::is_configured() ) {
-			return array( 'success' => false, 'message' => 'Cloudflare credentials are not configured.' );
+			return array(
+				'success' => false,
+				'message' => 'Cloudflare credentials are not configured.',
+			);
 		}
 
 		$response = wp_remote_post(
@@ -22,7 +25,7 @@ class Lookit_CF_Purge_Cloudflare_Api {
 					'Authorization' => 'Bearer ' . Lookit_CF_Purge_Settings::get_api_token(),
 					'Content-Type'  => 'application/json',
 				),
-				'body' => wp_json_encode( array( 'files' => array( $url ) ) ),
+				'body'    => wp_json_encode( array( 'files' => array( $url ) ) ),
 			)
 		);
 
@@ -35,7 +38,10 @@ class Lookit_CF_Purge_Cloudflare_Api {
 	public static function purge_all(): array {
 
 		if ( ! Lookit_CF_Purge_Settings::is_configured() ) {
-			return array( 'success' => false, 'message' => 'Cloudflare credentials are not configured.' );
+			return array(
+				'success' => false,
+				'message' => 'Cloudflare credentials are not configured.',
+			);
 		}
 
 		$response = wp_remote_post(
@@ -46,7 +52,7 @@ class Lookit_CF_Purge_Cloudflare_Api {
 					'Authorization' => 'Bearer ' . Lookit_CF_Purge_Settings::get_api_token(),
 					'Content-Type'  => 'application/json',
 				),
-				'body' => wp_json_encode( array( 'purge_everything' => true ) ),
+				'body'    => wp_json_encode( array( 'purge_everything' => true ) ),
 			)
 		);
 
@@ -59,7 +65,10 @@ class Lookit_CF_Purge_Cloudflare_Api {
 	public static function test_connection(): array {
 
 		if ( ! Lookit_CF_Purge_Settings::is_configured() ) {
-			return array( 'success' => false, 'message' => 'Credentials not saved. Enter your API Token and Zone ID first.' );
+			return array(
+				'success' => false,
+				'message' => 'Credentials not saved. Enter your API Token and Zone ID first.',
+			);
 		}
 
 		$response = wp_remote_get(
@@ -74,16 +83,25 @@ class Lookit_CF_Purge_Cloudflare_Api {
 		);
 
 		if ( is_wp_error( $response ) ) {
-			return array( 'success' => false, 'message' => 'Connection failed: ' . $response->get_error_message() );
+			return array(
+				'success' => false,
+				'message' => 'Connection failed: ' . $response->get_error_message(),
+			);
 		}
 
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		if ( ! empty( $body['success'] ) ) {
-			return array( 'success' => true, 'message' => '✅ Connected successfully. Zone: ' . ( $body['result']['name'] ?? 'unknown' ) );
+			return array(
+				'success' => true,
+				'message' => '✅ Connected successfully. Zone: ' . ( $body['result']['name'] ?? 'unknown' ),
+			);
 		}
 
-		return array( 'success' => false, 'message' => 'Cloudflare rejected the request.' );
+		return array(
+			'success' => false,
+			'message' => 'Cloudflare rejected the request.',
+		);
 	}
 
 	/**
@@ -92,14 +110,20 @@ class Lookit_CF_Purge_Cloudflare_Api {
 	private static function parse_response( $response, string $success_message ): array {
 
 		if ( is_wp_error( $response ) ) {
-			return array( 'success' => false, 'message' => 'Request failed: ' . $response->get_error_message() );
+			return array(
+				'success' => false,
+				'message' => 'Request failed: ' . $response->get_error_message(),
+			);
 		}
 
 		$status_code = wp_remote_retrieve_response_code( $response );
 		$body        = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		if ( ! empty( $body['success'] ) ) {
-			return array( 'success' => true, 'message' => $success_message );
+			return array(
+				'success' => true,
+				'message' => $success_message,
+			);
 		}
 
 		$errors = array();
@@ -109,6 +133,9 @@ class Lookit_CF_Purge_Cloudflare_Api {
 			}
 		}
 
-		return array( 'success' => false, 'message' => 'Cloudflare API error (HTTP ' . $status_code . '): ' . implode( ' | ', $errors ) );
+		return array(
+			'success' => false,
+			'message' => 'Cloudflare API error (HTTP ' . $status_code . '): ' . implode( ' | ', $errors ),
+		);
 	}
 }
