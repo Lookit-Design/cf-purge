@@ -1,0 +1,31 @@
+{
+    "name": "lookitdesign/lookit-cf-purge",
+    "description": "Surgical single-URL Cloudflare cache purge from the WordPress admin bar.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "homepage": "https://lookitdesign.com",
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^3.10",
+        "wp-coding-standards/wpcs": "^3.1",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+        "phpunit/phpunit": "^9.6",
+        "yoast/phpunit-polyfills": "^1.1 || ^2.0"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        },
+        "sort-packages": true
+    },
+    "scripts": {
+        "lint": "find . -path ./vendor -prune -o -name '*.php' -print0 | xargs -0 -n1 -P4 php -l",
+        "phpcs": "phpcs",
+        "phpcbf": "phpcbf",
+        "compat": "phpcs --standard=PHPCompatibilityWP --runtime-set testVersion 7.4-",
+        "test": "phpunit"
+    }
+}
