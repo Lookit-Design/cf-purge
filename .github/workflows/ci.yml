@@ -1,0 +1,167 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: PHP lint (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.0', '8.1', '8.2', '8.3', '8.4', '8.5']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: none
+
+      - name: Lint all PHP files
+        run: |
+          find . -path ./vendor -prune -o -name '*.php' -print0 \
+            | xargs -0 -n1 -P4 php -l
+
+  coding-standards:
+    name: Coding standards & security (PHPCS)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+          tools: composer
+
+      - name: Install dependencies
+        uses: ramsey/composer-install@v3
+
+      - name: Run PHPCS (WordPress standards + PHP compatibility)
+        run: composer phpcs
+
+  plugin-check:
+    name: WordPress.org Plugin Check
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mysqli
+          coverage: none
+          tools: wp-cli
+
+      - name: Build distributable copy
+        run: |
+          mkdir -p build/lookit-cf-purge
+          rsync -a --exclude-from=.distignore ./ build/lookit-cf-purge/
+
+      - name: Set up WordPress and Plugin Check
+        run: |
+          wp core download --path=wp --version=latest
+          wp config create --path=wp --dbname=wp_pc --dbuser=root --dbpass=root --dbhost=127.0.0.1:3306
+          wp db create --path=wp
+          wp core install --path=wp --url=http://localhost --title="Plugin Check" \
+            --admin_user=admin --admin_password=admin --admin_email=admin@example.com --skip-email
+          cp -R build/lookit-cf-purge wp/wp-content/plugins/lookit-cf-purge
+          wp plugin install plugin-check --activate --path=wp
+          wp plugin activate lookit-cf-purge --path=wp
+
+      - name: Run Plugin Check
+        run: |
+          OUTPUT=$(wp plugin check lookit-cf-purge --path=wp --include-experimental --severity=error 2>&1)
+          echo "$OUTPUT"
+          if echo "$OUTPUT" | grep -q "No errors found"; then
+            echo "Plugin Check passed with no errors."
+          else
+            echo "::error::Plugin Check reported errors."
+            exit 1
+          fi
+
+  test:
+    name: Tests (WP ${{ matrix.wp }} / PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { php: '7.4', wp: 'latest' }
+          - { php: '8.0', wp: 'latest' }
+          - { php: '8.1', wp: 'latest' }
+          - { php: '8.2', wp: 'latest' }
+          - { php: '8.3', wp: 'latest' }
+          - { php: '8.4', wp: 'latest' }
+          - { php: '8.5', wp: 'latest' }
+          - { php: '7.4', wp: '6.0' }
+          - { php: '8.1', wp: '6.6' }
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      WP_TESTS_PHPUNIT_POLYFILLS_PATH: ${{ github.workspace }}/vendor/yoast/phpunit-polyfills
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Subversion
+        run: sudo apt-get update && sudo apt-get install -y subversion
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mysqli
+          coverage: none
+          tools: composer
+
+      - name: Install dependencies
+        uses: ramsey/composer-install@v3
+
+      - name: Install WordPress test suite
+        run: bash bin/install-wp-tests.sh wordpress_test root root 127.0.0.1:3306 ${{ matrix.wp }}
+
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit
