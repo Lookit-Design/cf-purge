@@ -3,6 +3,7 @@
 .github/
 .idea/
 bin/
+build/
 tests/
 node_modules/
 vendor/

@@ -63,13 +63,13 @@ jobs:
 
       - name: Build distributable copy
         run: |
-          mkdir -p "${{ runner.temp }}/dist/lookit-cf-purge"
-          rsync -a --exclude-from=.distignore ./ "${{ runner.temp }}/dist/lookit-cf-purge/"
+          mkdir -p build/lookit-cf-purge
+          rsync -a --exclude-from=.distignore ./ build/lookit-cf-purge/
 
       - name: Run Plugin Check
         uses: wordpress/plugin-check-action@v1
         with:
-          build-dir: ${{ runner.temp }}/dist/lookit-cf-purge
+          build-dir: build/lookit-cf-purge
 
   test:
     name: Tests (WP ${{ matrix.wp }} / PHP ${{ matrix.php }})
