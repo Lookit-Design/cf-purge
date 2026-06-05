@@ -1,0 +1,53 @@
+# --- OS files ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# --- IDE / editors ---
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+.project
+.buildpath
+.settings/
+nbproject/
+*.swp
+*.swo
+*~
+
+# --- Dependency managers ---
+/vendor/
+composer.phar
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- Build / dist artifacts ---
+/build/
+/dist/
+*.zip
+*.tar
+*.tar.gz
+
+# --- Logs & caches ---
+*.log
+.cache/
+.phpunit.result.cache
+.php-cs-fixer.cache
+
+# --- Environment / secrets ---
+.env
+.env.*
+!.env.example
+
+# --- WordPress (in case plugin is checked out inside a WP install) ---
+wp-config.php
+/wp-content/uploads/
