@@ -93,3 +93,6 @@ jobs:
 
       - name: Run PHPUnit
         run: vendor/bin/phpunit
+
+      - name: Run PHPUnit (ajax group)
+        run: vendor/bin/phpunit --group ajax
