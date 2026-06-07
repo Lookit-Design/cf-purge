@@ -82,7 +82,9 @@ class Lookit_CF_Purge_Settings {
 	public static function render_api_token_field() {
 		$settings = self::get_settings();
 		$token    = $settings['api_token'] ?? '';
-		$masked   = $token ? str_repeat( '•', max( 0, strlen( $token ) - 6 ) ) . substr( $token, -6 ) : '';
+		// Fixed-width mask so the dot count never leaks the real token length;
+		// only the last 4 characters are revealed, enough to identify the key.
+		$masked = $token ? '••••••••' . substr( $token, -4 ) : '';
 		?>
 		<input
 			type="password"
