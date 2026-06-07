@@ -25,6 +25,7 @@ nbproject/
 # --- Dependency managers ---
 /vendor/
 composer.phar
+composer.lock
 node_modules/
 npm-debug.log*
 yarn-debug.log*
