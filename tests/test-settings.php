@@ -29,6 +29,45 @@ class Test_Lookit_CF_Purge_Settings extends WP_UnitTestCase {
 		$this->assertSame( '', $result['zone_id'] );
 	}
 
+	public function test_sanitize_preserves_existing_token_when_submitted_blank() {
+		update_option(
+			Lookit_CF_Purge_Settings::OPTION_KEY,
+			array(
+				'api_token' => 'saved-token',
+				'zone_id'   => 'zone-1',
+			)
+		);
+
+		$result = Lookit_CF_Purge_Settings::sanitize_settings(
+			array(
+				'api_token' => '',
+				'zone_id'   => 'zone-2',
+			)
+		);
+
+		$this->assertSame( 'saved-token', $result['api_token'] );
+		$this->assertSame( 'zone-2', $result['zone_id'] );
+	}
+
+	public function test_sanitize_replaces_token_when_new_value_submitted() {
+		update_option(
+			Lookit_CF_Purge_Settings::OPTION_KEY,
+			array(
+				'api_token' => 'old-token',
+				'zone_id'   => 'zone-1',
+			)
+		);
+
+		$result = Lookit_CF_Purge_Settings::sanitize_settings(
+			array(
+				'api_token' => 'new-token',
+				'zone_id'   => 'zone-1',
+			)
+		);
+
+		$this->assertSame( 'new-token', $result['api_token'] );
+	}
+
 	public function test_getters_round_trip_saved_option() {
 		update_option(
 			Lookit_CF_Purge_Settings::OPTION_KEY,
