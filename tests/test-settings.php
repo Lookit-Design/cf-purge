@@ -81,6 +81,26 @@ class Test_Lookit_CF_Purge_Settings extends WP_UnitTestCase {
 		$this->assertSame( 'zone-456', Lookit_CF_Purge_Settings::get_zone_id() );
 	}
 
+	/**
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 */
+	public function test_get_api_token_prefers_wp_config_constant() {
+		define( Lookit_CF_Purge_Settings::TOKEN_CONSTANT, 'constant-token' );
+
+		update_option(
+			Lookit_CF_Purge_Settings::OPTION_KEY,
+			array(
+				'api_token' => 'db-token',
+				'zone_id'   => 'zone-1',
+			)
+		);
+
+		$this->assertTrue( Lookit_CF_Purge_Settings::token_is_defined_in_config() );
+		$this->assertSame( 'constant-token', Lookit_CF_Purge_Settings::get_api_token() );
+		$this->assertTrue( Lookit_CF_Purge_Settings::is_configured() );
+	}
+
 	public function test_is_configured_requires_both_values() {
 		$this->assertFalse( Lookit_CF_Purge_Settings::is_configured() );
 
