@@ -8,6 +8,7 @@ class Lookit_CF_Purge_Settings {
 	public static function init() {
 		add_action( 'admin_menu', array( __CLASS__, 'add_settings_page' ) );
 		add_action( 'admin_init', array( __CLASS__, 'register_settings' ) );
+		add_action( 'admin_init', array( __CLASS__, 'maybe_disable_autoload' ) );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_admin_styles' ) );
 	}
 
@@ -25,7 +26,12 @@ class Lookit_CF_Purge_Settings {
 		register_setting(
 			'lookit_cf_purge_group',
 			self::OPTION_KEY,
-			array( __CLASS__, 'sanitize_settings' )
+			array(
+				'type'              => 'array',
+				'sanitize_callback' => array( __CLASS__, 'sanitize_settings' ),
+				'default'           => array(),
+				'autoload'          => false,
+			)
 		);
 
 		add_settings_section(
@@ -53,9 +59,17 @@ class Lookit_CF_Purge_Settings {
 	}
 
 	public static function sanitize_settings( $input ) {
-		$sanitized              = array();
-		$sanitized['api_token'] = isset( $input['api_token'] ) ? sanitize_text_field( trim( $input['api_token'] ) ) : '';
-		$sanitized['zone_id']   = isset( $input['zone_id'] ) ? sanitize_text_field( trim( $input['zone_id'] ) ) : '';
+		$existing  = self::get_settings();
+		$sanitized = array();
+
+		$submitted_token = isset( $input['api_token'] ) ? sanitize_text_field( trim( $input['api_token'] ) ) : '';
+
+		// The token field renders blank so the secret is never sent back to the
+		// browser; a blank submission therefore means "keep the saved token".
+		$sanitized['api_token'] = '' !== $submitted_token ? $submitted_token : ( $existing['api_token'] ?? '' );
+
+		$sanitized['zone_id'] = isset( $input['zone_id'] ) ? sanitize_text_field( trim( $input['zone_id'] ) ) : '';
+
 		return $sanitized;
 	}
 
@@ -74,20 +88,23 @@ class Lookit_CF_Purge_Settings {
 	public static function render_api_token_field() {
 		$settings = self::get_settings();
 		$token    = $settings['api_token'] ?? '';
-		$masked   = $token ? str_repeat( '•', max( 0, strlen( $token ) - 6 ) ) . substr( $token, -6 ) : '';
+		// Fixed-width mask so the dot count never leaks the real token length;
+		// only the last 4 characters are revealed, enough to identify the key.
+		$masked = $token ? '••••••••' . substr( $token, -4 ) : '';
 		?>
 		<input
 			type="password"
 			name="<?php echo esc_attr( self::OPTION_KEY ); ?>[api_token]"
 			id="lookit_cf_api_token"
-			value="<?php echo esc_attr( $token ); ?>"
+			value=""
 			class="regular-text"
 			autocomplete="off"
+			placeholder="<?php echo $token ? esc_attr__( 'Leave blank to keep the saved token', 'lookit-cf-purge' ) : ''; ?>"
 		>
 		<?php if ( $token ) : ?>
 			<p class="description">
 				Currently set: <code><?php echo esc_html( $masked ); ?></code>
-				&mdash; paste a new value to replace it.
+				&mdash; leave blank to keep it, or paste a new value to replace it.
 			</p>
 		<?php endif; ?>
 		<?php
@@ -168,6 +185,23 @@ class Lookit_CF_Purge_Settings {
 		if ( 'settings_page_lookit-cf-purge' !== $hook ) {
 			return;
 		}
+	}
+
+	/**
+	 * Keep the credentials out of the autoloaded options so the token is not
+	 * pulled into memory on every front-end request. Older installs that saved
+	 * the option as autoloaded are migrated in place.
+	 */
+	public static function maybe_disable_autoload() {
+		$alloptions = wp_load_alloptions();
+
+		if ( ! isset( $alloptions[ self::OPTION_KEY ] ) ) {
+			return;
+		}
+
+		$value = get_option( self::OPTION_KEY );
+		delete_option( self::OPTION_KEY );
+		add_option( self::OPTION_KEY, $value, '', false );
 	}
 
 	/**

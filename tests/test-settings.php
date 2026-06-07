@@ -29,6 +29,45 @@ class Test_Lookit_CF_Purge_Settings extends WP_UnitTestCase {
 		$this->assertSame( '', $result['zone_id'] );
 	}
 
+	public function test_sanitize_preserves_existing_token_when_submitted_blank() {
+		update_option(
+			Lookit_CF_Purge_Settings::OPTION_KEY,
+			array(
+				'api_token' => 'saved-token',
+				'zone_id'   => 'zone-1',
+			)
+		);
+
+		$result = Lookit_CF_Purge_Settings::sanitize_settings(
+			array(
+				'api_token' => '',
+				'zone_id'   => 'zone-2',
+			)
+		);
+
+		$this->assertSame( 'saved-token', $result['api_token'] );
+		$this->assertSame( 'zone-2', $result['zone_id'] );
+	}
+
+	public function test_sanitize_replaces_token_when_new_value_submitted() {
+		update_option(
+			Lookit_CF_Purge_Settings::OPTION_KEY,
+			array(
+				'api_token' => 'old-token',
+				'zone_id'   => 'zone-1',
+			)
+		);
+
+		$result = Lookit_CF_Purge_Settings::sanitize_settings(
+			array(
+				'api_token' => 'new-token',
+				'zone_id'   => 'zone-1',
+			)
+		);
+
+		$this->assertSame( 'new-token', $result['api_token'] );
+	}
+
 	public function test_getters_round_trip_saved_option() {
 		update_option(
 			Lookit_CF_Purge_Settings::OPTION_KEY,
@@ -40,6 +79,26 @@ class Test_Lookit_CF_Purge_Settings extends WP_UnitTestCase {
 
 		$this->assertSame( 'token-123', Lookit_CF_Purge_Settings::get_api_token() );
 		$this->assertSame( 'zone-456', Lookit_CF_Purge_Settings::get_zone_id() );
+	}
+
+	public function test_maybe_disable_autoload_removes_option_from_autoload() {
+		delete_option( Lookit_CF_Purge_Settings::OPTION_KEY );
+		add_option(
+			Lookit_CF_Purge_Settings::OPTION_KEY,
+			array(
+				'api_token' => 'token',
+				'zone_id'   => 'zone',
+			),
+			'',
+			'yes'
+		);
+
+		$this->assertArrayHasKey( Lookit_CF_Purge_Settings::OPTION_KEY, wp_load_alloptions() );
+
+		Lookit_CF_Purge_Settings::maybe_disable_autoload();
+
+		$this->assertArrayNotHasKey( Lookit_CF_Purge_Settings::OPTION_KEY, wp_load_alloptions() );
+		$this->assertSame( 'token', Lookit_CF_Purge_Settings::get_api_token() );
 	}
 
 	public function test_is_configured_requires_both_values() {
