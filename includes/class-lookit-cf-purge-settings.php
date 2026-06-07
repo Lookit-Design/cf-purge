@@ -5,6 +5,12 @@ class Lookit_CF_Purge_Settings {
 
 	const OPTION_KEY = 'lookit_cf_purge_settings';
 
+	/**
+	 * Optional wp-config.php constant that supplies the API token, keeping the
+	 * secret out of the database entirely. When defined, it takes precedence.
+	 */
+	const TOKEN_CONSTANT = 'LOOKIT_CF_PURGE_API_TOKEN';
+
 	public static function init() {
 		add_action( 'admin_menu', array( __CLASS__, 'add_settings_page' ) );
 		add_action( 'admin_init', array( __CLASS__, 'register_settings' ) );
@@ -80,6 +86,23 @@ class Lookit_CF_Purge_Settings {
 	}
 
 	public static function render_api_token_field() {
+		if ( self::token_is_defined_in_config() ) {
+			?>
+			<p class="description">
+				<?php
+				echo wp_kses_post(
+					sprintf(
+						/* translators: %s: the wp-config.php constant name. */
+						__( 'The API token is defined via the %s constant in wp-config.php and cannot be edited here.', 'lookit-cf-purge' ),
+						'<code>' . esc_html( self::TOKEN_CONSTANT ) . '</code>'
+					)
+				);
+				?>
+			</p>
+			<?php
+			return;
+		}
+
 		$settings = self::get_settings();
 		$token    = $settings['api_token'] ?? '';
 		// Fixed-width mask so the dot count never leaks the real token length;
@@ -188,7 +211,15 @@ class Lookit_CF_Purge_Settings {
 		return get_option( self::OPTION_KEY, array() );
 	}
 
+	public static function token_is_defined_in_config() {
+		return defined( self::TOKEN_CONSTANT ) && '' !== (string) constant( self::TOKEN_CONSTANT );
+	}
+
 	public static function get_api_token() {
+		if ( self::token_is_defined_in_config() ) {
+			return (string) constant( self::TOKEN_CONSTANT );
+		}
+
 		$settings = self::get_settings();
 		return $settings['api_token'] ?? '';
 	}
