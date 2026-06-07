@@ -70,6 +70,9 @@ jobs:
       - name: Run PHPUnit
         run: vendor/bin/phpunit
 
+      - name: Run PHPUnit (ajax group)
+        run: vendor/bin/phpunit --group ajax
+
   notify-forward-compat:
     name: Open issue on forward-compat failure
     needs: forward-compat
