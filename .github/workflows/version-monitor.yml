@@ -1,0 +1,162 @@
+name: Version Monitor
+
+# Scheduled, non-blocking watchdog that keeps the plugin ahead of new
+# PHP and WordPress releases. It never runs on pull requests, so it can
+# never block a merge; a red run (or an automatically opened issue) is
+# simply a signal to look manually.
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: version-monitor
+  cancel-in-progress: true
+
+jobs:
+  forward-compat:
+    name: Forward compat (WP ${{ matrix.wp }} / PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { wp: 'trunk', php: 'nightly' }
+          - { wp: 'trunk', php: '8.5' }
+          - { wp: 'latest', php: 'nightly' }
+
+    services:
+      mysql:
+        image: mysql:latest
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      WP_TESTS_PHPUNIT_POLYFILLS_PATH: ${{ github.workspace }}/vendor/yoast/phpunit-polyfills
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Subversion
+        run: sudo apt-get update && sudo apt-get install -y subversion
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mysqli
+          coverage: none
+          tools: composer
+
+      - name: Install dependencies
+        uses: ramsey/composer-install@v3
+        with:
+          composer-options: "--ignore-platform-reqs"
+
+      - name: Install WordPress test suite
+        run: bash bin/install-wp-tests.sh wordpress_test root root 127.0.0.1:3306 ${{ matrix.wp }}
+
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit
+
+      - name: Run PHPUnit (ajax group)
+        run: vendor/bin/phpunit --group ajax
+
+  notify-forward-compat:
+    name: Open issue on forward-compat failure
+    needs: forward-compat
+    if: failure() && github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Open tracking issue
+        run: |
+          set -euo pipefail
+          gh label create version-monitor --color FBCA04 --description "Automated version monitor" 2>/dev/null || true
+          gh label create forward-compat --color D93F0B --description "Forward-compatibility test failure" 2>/dev/null || true
+
+          EXISTING=$(gh issue list --repo "${{ github.repository }}" --state open --label forward-compat --json number --jq '.[0].number // empty')
+          if [ -n "${EXISTING}" ]; then
+            echo "Issue #${EXISTING} is already open for this; leaving it untouched."
+            exit 0
+          fi
+
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          BODY="The scheduled forward-compatibility run failed. This usually means an upcoming PHP (\`nightly\`) or WordPress (\`trunk\`) release breaks the plugin or its test suite.
+
+          Review the run and decide whether the plugin needs changes: ${RUN_URL}"
+          gh issue create --repo "${{ github.repository }}" --title "[version-monitor] Forward-compatibility tests are failing" --body "${BODY}" --label version-monitor,forward-compat
+
+  version-watch:
+    name: Detect new stable releases
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      # The newest PHP and WordPress minor versions the project already
+      # covers in its required CI matrix. Bump these when you add support
+      # for a newer release; the job fails until they catch up to upstream.
+      SUPPORTED_MAX_PHP: "8.5"
+      SUPPORTED_MAX_WP: "7.0"
+    steps:
+      - name: Compare supported versions against latest stable releases
+        run: |
+          set -euo pipefail
+
+          latest_php=$(curl -fsSL https://endoflife.date/api/php.json | jq -r '.[0].cycle')
+          latest_wp=$(curl -fsSL https://api.wordpress.org/core/version-check/1.7/ | jq -r '.offers[0].version' | cut -d. -f1,2)
+
+          echo "Latest stable PHP minor:        ${latest_php} (project covers up to ${SUPPORTED_MAX_PHP})"
+          echo "Latest stable WordPress minor:  ${latest_wp} (project covers up to ${SUPPORTED_MAX_WP})"
+
+          newest_php=$(printf '%s\n%s\n' "$SUPPORTED_MAX_PHP" "$latest_php" | sort -V | tail -1)
+          newest_wp=$(printf '%s\n%s\n' "$SUPPORTED_MAX_WP" "$latest_wp" | sort -V | tail -1)
+
+          behind=""
+          [ "$newest_php" != "$SUPPORTED_MAX_PHP" ] && behind="${behind}- PHP ${latest_php} is out; matrix tops out at ${SUPPORTED_MAX_PHP}.\n"
+          [ "$newest_wp" != "$SUPPORTED_MAX_WP" ] && behind="${behind}- WordPress ${latest_wp} is out; matrix tops out at ${SUPPORTED_MAX_WP}.\n"
+
+          if [ -z "$behind" ]; then
+            echo "Up to date with the latest stable releases."
+            exit 0
+          fi
+
+          gh label create version-monitor --color FBCA04 --description "Automated version monitor" 2>/dev/null || true
+          gh label create new-release --color 0E8A16 --description "New stable PHP/WordPress release available" 2>/dev/null || true
+
+          # A signature of the latest detected minors. The same signature on a
+          # later run means nothing new shipped, so the job stays silent; a
+          # different signature means a further release appeared.
+          SIG="php=${latest_php};wp=${latest_wp}"
+          TITLE="[version-monitor] New stable PHP/WordPress release available"
+          BODY=$(printf 'A new stable release was detected that the CI matrix does not yet cover:\n\n%bUpdate %s (matrix) and %s (Tested up to / Requires PHP), then bump SUPPORTED_MAX_* in this workflow.\n\n<!-- version-monitor-state: %s -->' "$behind" ".github/workflows/test.yml" "readme.txt" "$SIG")
+
+          EXISTING=$(gh issue list --repo "${{ github.repository }}" --state open --label new-release --json number --jq '.[0].number // empty')
+          if [ -z "${EXISTING}" ]; then
+            gh issue create --repo "${{ github.repository }}" --title "${TITLE}" --body "${BODY}" --label version-monitor,new-release
+            echo "Opened a new tracking issue (state: ${SIG})."
+          else
+            PREV_BODY=$(gh issue view "${EXISTING}" --repo "${{ github.repository }}" --json body --jq '.body')
+            RECORDED=$(printf '%s\n' "$PREV_BODY" | sed -n 's/.*version-monitor-state: \(.*\) -->.*/\1/p' | head -1)
+            if [ "${RECORDED}" = "${SIG}" ]; then
+              echo "Issue #${EXISTING} already reflects the current releases (${SIG}); staying silent."
+            else
+              gh issue comment "${EXISTING}" --repo "${{ github.repository }}" --body "$(printf 'A newer stable release has appeared since this issue was opened:\n\n%bUpdate the matrix and readme accordingly.' "$behind")"
+              gh issue edit "${EXISTING}" --repo "${{ github.repository }}" --body "${BODY}"
+              echo "Commented on #${EXISTING} (state ${RECORDED:-none} -> ${SIG})."
+            fi
+          fi
+
+          echo "::error::A newer stable PHP or WordPress release is available than the matrix covers."
+          exit 1
