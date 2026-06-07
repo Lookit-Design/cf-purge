@@ -199,14 +199,9 @@ class Lookit_CF_Purge_Settings {
 			return;
 		}
 
-		if ( function_exists( 'wp_set_option_autoload' ) ) {
-			wp_set_option_autoload( self::OPTION_KEY, false );
-			return;
-		}
-
 		$value = get_option( self::OPTION_KEY );
 		delete_option( self::OPTION_KEY );
-		add_option( self::OPTION_KEY, $value, '', 'no' );
+		add_option( self::OPTION_KEY, $value, '', false );
 	}
 
 	/**
