@@ -5,9 +5,10 @@ automatically whenever a **GitHub Release is published**. The release tag drives
 the version, tests must pass, and the version numbers must line up before
 anything reaches WordPress.org.
 
-> This guide covers **subsequent releases**. The one-time setup (deploy workflow
-> on `main`, `SVN_USERNAME` / `SVN_PASSWORD` repository secrets, and the initial
-> WordPress.org submission) is already done.
+> This guide covers **subsequent releases**. The one-time setup (the
+> [deploy workflow](.github/workflows/deploy.yml) on `main`, the
+> `SVN_USERNAME` / `SVN_PASSWORD` [repository secrets](../../settings/secrets/actions),
+> and the initial WordPress.org submission) is already done.
 
 ## Versioning rules
 
@@ -32,11 +33,11 @@ rejected:
 
 | Location | File |
 | --- | --- |
-| Plugin header `Version:` | `lookit-cf-purge.php` |
-| `LOOKIT_CF_PURGE_VERSION` constant | `lookit-cf-purge.php` |
-| `Stable tag:` | `readme.txt` |
+| Plugin header `Version:` | [`lookit-cf-purge.php`](lookit-cf-purge.php) |
+| `LOOKIT_CF_PURGE_VERSION` constant | [`lookit-cf-purge.php`](lookit-cf-purge.php) |
+| `Stable tag:` | [`readme.txt`](readme.txt) |
 
-Also add a matching entry under `== Changelog ==` in `readme.txt`.
+Also add a matching entry under `== Changelog ==` in [`readme.txt`](readme.txt).
 
 ### 2. Merge the bump into `main`
 
@@ -51,7 +52,7 @@ first.
 
 ### 4. Draft the GitHub Release
 
-Repo → **Releases** → **Draft a new release**:
+Go to [**Releases → Draft a new release**](../../releases/new):
 
 - **Tag:** type the bare version (e.g. `1.2.3`) and choose
   *Create new tag: `1.2.3` on publish*. **Do not** prefix with `v`.
@@ -67,12 +68,13 @@ nothing.
 
 ### 6. Watch the deploy
 
-Repo → **Actions** → **Deploy to WordPress.org**. The run will, in order:
+Open the [**Deploy to WordPress.org**](../../actions/workflows/deploy.yml) workflow
+under **Actions**. The run will, in order:
 
 1. Run the test suite (plus the AJAX group) on a real WordPress + MySQL stack.
 2. Validate the tag format and confirm it matches the three version values.
 3. Deploy the code to SVN `trunk/` and `tags/<version>`.
-4. Sync `.wordpress-org/` assets (icon, banners, screenshots) to SVN `assets/`.
+4. Sync [`.wordpress-org/`](.wordpress-org) assets (icon, banners, screenshots) to SVN `assets/`.
 
 A failure in any earlier step stops the deploy, so nothing partial reaches
 WordPress.org.
@@ -91,8 +93,8 @@ svn ls https://plugins.svn.wordpress.org/lookit-cf-purge/tags/
 
 | Situation | What to do |
 | --- | --- |
-| Test or version-check failed (nothing deployed) | If transient, **Actions → Re-run failed jobs**. If it's a real bug, fix on `main` and cut a new release. |
-| Bad/expired SVN credentials | Update the `SVN_USERNAME` / `SVN_PASSWORD` secrets, then **Re-run failed jobs** (SVN was untouched). |
+| Test or version-check failed (nothing deployed) | If transient, re-run from the [workflow run](../../actions/workflows/deploy.yml) (**Re-run failed jobs**). If it's a real bug, fix on `main` and cut a new release. |
+| Bad/expired SVN credentials | Update the `SVN_USERNAME` / `SVN_PASSWORD` [secrets](../../settings/secrets/actions), then **Re-run failed jobs** (SVN was untouched). |
 | `tag already exists` on SVN | That version already shipped. Bump to a higher version and release again. |
 | Code deployed but **assets** failed | The code is live; only the asset sync needs re-running. Re-run the asset sync (see below) — do **not** re-run the whole deploy job, because it would try to recreate the existing SVN tag and fail. |
 
