@@ -98,9 +98,9 @@ jobs:
         run: vendor/bin/phpunit --group ajax
 
   # Single stable status check that summarises the whole matrix above, so
-  # branch protection can require one name ("Tests") instead of every cell.
-  tests:
-    name: Tests
+  # branch protection can require one name ("Test") instead of every cell.
+  test-result:
+    name: Test
     if: always()
     needs: test
     runs-on: ubuntu-latest
