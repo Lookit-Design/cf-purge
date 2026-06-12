@@ -38,7 +38,8 @@ Supports `WordPress >= 5.8` on `PHP >= 7.4`.
   - [Coding Standards](#coding-standards)
   - [Continuous Integration](#continuous-integration)
 - [Deployment](#deployment)
-- [Support](#support)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Getting Started
 
@@ -172,11 +173,13 @@ A scheduled [Version Monitor](../../actions/workflows/version-monitor.yml) workf
 
 See [DEPLOY.md](DEPLOY.md) for the release and WordPress.org deployment process.
 
-## Support
+## Contributing
 
-* Documentation: https://lookitdesign.com/software/cloudflare-cache-purge/
-* Support form: https://lookitdesign.com/cloudflare-purge-support-form/
-* Bug reports and pull requests are welcome on [GitHub](../../issues).
+Bug reports and pull requests are welcome on [GitHub](../../issues).
+
+## License
+
+This plugin is available as open source under the terms of the [GPL-2.0-or-later License](https://www.gnu.org/licenses/gpl-2.0.html).
 
 ---
 
