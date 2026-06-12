@@ -1,0 +1,103 @@
+name: Deploy to WordPress.org
+
+# Publishes a tagged release to the WordPress.org plugin repository.
+# Triggered when a GitHub Release is published; the release's tag drives
+# the deployed version. Tests must pass before anything reaches SVN.
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Test before deploy
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:latest
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      WP_TESTS_PHPUNIT_POLYFILLS_PATH: ${{ github.workspace }}/vendor/yoast/phpunit-polyfills
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Subversion
+        run: sudo apt-get update && sudo apt-get install -y subversion
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mysqli
+          coverage: none
+          tools: composer
+
+      - name: Install dependencies
+        uses: ramsey/composer-install@v3
+
+      - name: Install WordPress test suite
+        run: bash bin/install-wp-tests.sh wordpress_test root root 127.0.0.1:3306 latest
+
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit
+
+      - name: Run PHPUnit (ajax group)
+        run: vendor/bin/phpunit --group ajax
+
+  deploy:
+    name: Deploy to WordPress.org
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify version numbers match the release tag
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME#v}"
+          header=$(grep -iE '^\s*\*?\s*Version:' lookit-cf-purge.php | head -1 | sed -E 's/.*Version:[[:space:]]*//' | tr -d '[:space:]')
+          const=$(grep -E "LOOKIT_CF_PURGE_VERSION'," lookit-cf-purge.php | head -1 | sed -E "s/.*,[[:space:]]*'([^']+)'.*/\1/")
+          stable=$(grep -iE '^Stable tag:' readme.txt | head -1 | sed -E 's/.*:[[:space:]]*//' | tr -d '[:space:]')
+
+          echo "Release tag:           ${tag}"
+          echo "Plugin header Version: ${header}"
+          echo "Version constant:      ${const}"
+          echo "readme Stable tag:     ${stable}"
+
+          if [ "${tag}" != "${header}" ] || [ "${tag}" != "${const}" ] || [ "${tag}" != "${stable}" ]; then
+            echo "::error::Version mismatch. The release tag, plugin header Version, LOOKIT_CF_PURGE_VERSION, and readme.txt Stable tag must all be ${tag}."
+            exit 1
+          fi
+
+      - name: Deploy to WordPress.org
+        uses: 10up/action-wordpress-plugin-deploy@stable
+        with:
+          generate-zip: true
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: lookit-cf-purge
+
+      - name: Update WordPress.org assets (icon, banner, screenshots)
+        uses: 10up/action-wordpress-plugin-asset-update@stable
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: lookit-cf-purge
