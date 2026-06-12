@@ -165,7 +165,7 @@ Every push and pull request runs the following GitHub Actions workflows:
 | [Lint](../../actions/workflows/lint.yml) | `php -l` syntax check across the supported PHP versions |
 | [Coding Standards](../../actions/workflows/coding-standards.yml) | WordPress Coding Standards (PHPCS) |
 | [Plugin Check](../../actions/workflows/plugin-check.yml) | Official WordPress Plugin Check, including readme validation |
-| [Tests](../../actions/workflows/test.yml) | PHPUnit across a broad WordPress × PHP matrix |
+| [Test](../../actions/workflows/test.yml) | PHPUnit across a broad WordPress × PHP matrix |
 
 A scheduled [Version Monitor](../../actions/workflows/version-monitor.yml) workflow watches for new PHP and WordPress releases so compatibility can be reviewed proactively.
 
