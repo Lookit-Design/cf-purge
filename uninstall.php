@@ -1,6 +1,6 @@
 <?php
 /**
- * Uninstall routine for Lookit CF Purge.
+ * Uninstall routine for Lookit Cloudflare Cache Purge.
  *
  * Removes the stored Cloudflare credentials so the API token does not linger
  * in the database after the plugin is deleted.

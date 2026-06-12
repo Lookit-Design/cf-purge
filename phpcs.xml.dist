@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<ruleset name="Lookit CF Purge">
-    <description>Coding standards for the Lookit CF Purge plugin.</description>
+<ruleset name="Lookit Cloudflare Cache Purge">
+    <description>Coding standards for the Lookit Cloudflare Cache Purge plugin.</description>
 
     <file>.</file>
 
