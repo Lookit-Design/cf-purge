@@ -71,7 +71,13 @@ jobs:
       - name: Verify version numbers match the release tag
         run: |
           set -euo pipefail
-          tag="${GITHUB_REF_NAME#v}"
+          tag="${GITHUB_REF_NAME}"
+
+          if ! printf '%s' "${tag}" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Invalid release tag '${tag}'. Use a bare semantic version of three integers, e.g. 1.0.0 (no 'v' prefix, no suffix)."
+            exit 1
+          fi
+
           header=$(grep -iE '^\s*\*?\s*Version:' lookit-cf-purge.php | head -1 | sed -E 's/.*Version:[[:space:]]*//' | tr -d '[:space:]')
           const=$(grep -E "LOOKIT_CF_PURGE_VERSION'," lookit-cf-purge.php | head -1 | sed -E "s/.*,[[:space:]]*'([^']+)'.*/\1/")
           stable=$(grep -iE '^Stable tag:' readme.txt | head -1 | sed -E 's/.*:[[:space:]]*//' | tr -d '[:space:]')
