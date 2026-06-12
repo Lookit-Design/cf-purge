@@ -14,7 +14,7 @@ class Lookit_CF_Purge_Settings {
 
 	public static function add_settings_page() {
 		add_options_page(
-			__( 'Lookit CF Purge', 'lookit-cf-purge' ),
+			__( 'Lookit Cloudflare Cache Purge', 'lookit-cf-purge' ),
 			__( 'CF Purge Settings', 'lookit-cf-purge' ),
 			'manage_options',
 			'lookit-cf-purge',
@@ -139,7 +139,7 @@ class Lookit_CF_Purge_Settings {
 		<div class="wrap lookit-cf-purge-settings">
 			<h1>
 				<span class="dashicons dashicons-cloud" style="font-size:28px;vertical-align:middle;margin-right:6px;color:#F6821F;"></span>
-				<?php esc_html_e( 'Lookit CF Purge — Settings', 'lookit-cf-purge' ); ?>
+				<?php esc_html_e( 'Lookit Cloudflare Cache Purge — Settings', 'lookit-cf-purge' ); ?>
 			</h1>
 
 			<?php if ( null !== $test_result ) : ?>
