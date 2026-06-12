@@ -9,7 +9,7 @@
     beStrictAboutTestsThatDoNotTestAnything="false"
 >
     <testsuites>
-        <testsuite name="Lookit CF Purge">
+        <testsuite name="Lookit Cloudflare Cache Purge">
             <directory suffix=".php">./tests</directory>
             <exclude>./tests/bootstrap.php</exclude>
         </testsuite>
