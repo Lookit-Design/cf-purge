@@ -35,3 +35,15 @@ jobs:
         run: |
           find . -path ./vendor -prune -o -name '*.php' -print0 \
             | xargs -0 -n1 -P4 php -l
+
+  # Single stable status check that summarises the whole matrix above, so
+  # branch protection can require one name ("Lint") instead of every cell.
+  lint-result:
+    name: Lint
+    if: always()
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if any matrix job did not succeed
+        if: needs.lint.result != 'success'
+        run: exit 1
