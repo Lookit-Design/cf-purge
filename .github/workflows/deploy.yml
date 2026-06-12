@@ -100,10 +100,3 @@ jobs:
           SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
           SLUG: lookit-cf-purge
-
-      - name: Update WordPress.org assets (icon, banner, screenshots)
-        uses: 10up/action-wordpress-plugin-asset-update@stable
-        env:
-          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
-          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
-          SLUG: lookit-cf-purge
