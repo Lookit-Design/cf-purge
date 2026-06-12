@@ -2,6 +2,7 @@
 .git/
 .github/
 .idea/
+.wordpress-org/
 bin/
 build/
 tests/
@@ -9,6 +10,7 @@ node_modules/
 vendor/
 .gitignore
 .distignore
+DEPLOY.md
 .phpunit.result.cache
 .php-cs-fixer.cache
 composer.json
