@@ -170,7 +170,7 @@ A scheduled [Version Monitor](../../actions/workflows/version-monitor.yml) workf
 
 ## Deployment
 
-Releases are published to WordPress.org automatically when a GitHub Release is published. See [DEPLOY.md](DEPLOY.md) for the full process.
+See [DEPLOY.md](DEPLOY.md) for the release and WordPress.org deployment process.
 
 ## Support
 
