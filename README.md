@@ -9,7 +9,7 @@
 
 Granular Cloudflare cache control from the WordPress admin bar — purge a single page, any URL, or the entire site, right from wp-admin.
 
-Supports `WordPress >= 5.8` on `PHP >= 7.4`.
+Supports `WordPress >= 5.9` on `PHP >= 7.4`.
 
 ## Features
 
