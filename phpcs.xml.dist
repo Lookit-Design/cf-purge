@@ -36,7 +36,7 @@
         </properties>
     </rule>
 
-    <config name="minimum_wp_version" value="5.8"/>
+    <config name="minimum_wp_version" value="5.9"/>
 
     <!-- PHP cross-version compatibility (declared floor in readme.txt). -->
     <rule ref="PHPCompatibilityWP"/>
