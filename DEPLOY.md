@@ -7,7 +7,7 @@ anything reaches WordPress.org.
 
 > This guide covers **subsequent releases**. The one-time setup (the
 > [deploy workflow](.github/workflows/deploy.yml) on `main`, the
-> `SVN_USERNAME` / `SVN_PASSWORD` [repository secrets](../../settings/secrets/actions),
+> `SVN_USERNAME` / `SVN_PASSWORD` [repository secrets](../../settings/secrets/actions#repository-secrets),
 > and the initial WordPress.org submission) is already done.
 
 ## Versioning rules
@@ -94,7 +94,7 @@ svn ls https://plugins.svn.wordpress.org/lookit-cf-purge/tags/
 | Situation | What to do |
 | --- | --- |
 | Test or version-check failed (nothing deployed) | If transient, re-run from the [workflow run](../../actions/workflows/deploy.yml) (**Re-run failed jobs**). If it's a real bug, fix on `main` and cut a new release. |
-| Bad/expired SVN credentials | Update the `SVN_USERNAME` / `SVN_PASSWORD` [secrets](../../settings/secrets/actions), then **Re-run failed jobs** (SVN was untouched). |
+| Bad/expired SVN credentials | Update the `SVN_USERNAME` / `SVN_PASSWORD` [secrets](../../settings/secrets/actions#repository-secrets), then **Re-run failed jobs** (SVN was untouched). |
 | `tag already exists` on SVN | That version already shipped. Bump to a higher version and release again. |
 | Code deployed but **assets** failed | The code is live; only the asset sync needs re-running. Re-run the asset sync (see below) — do **not** re-run the whole deploy job, because it would try to recreate the existing SVN tag and fail. |
 
