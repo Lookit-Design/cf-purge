@@ -82,12 +82,15 @@ jobs:
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Open tracking issue
+        env:
+          REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
-          gh label create version-monitor --color FBCA04 --description "Automated version monitor" 2>/dev/null || true
-          gh label create forward-compat --color D93F0B --description "Forward-compatibility test failure" 2>/dev/null || true
+          # No checkout in this job, so every gh call needs an explicit --repo.
+          gh label create version-monitor --repo "${REPO}" --color FBCA04 --description "Automated version monitor" 2>/dev/null || true
+          gh label create forward-compat --repo "${REPO}" --color D93F0B --description "Forward-compatibility test failure" 2>/dev/null || true
 
-          EXISTING=$(gh issue list --repo "${{ github.repository }}" --state open --label forward-compat --json number --jq '.[0].number // empty')
+          EXISTING=$(gh issue list --repo "${REPO}" --state open --label forward-compat --json number --jq '.[0].number // empty')
           if [ -n "${EXISTING}" ]; then
             echo "Issue #${EXISTING} is already open for this; leaving it untouched."
             exit 0
@@ -97,7 +100,7 @@ jobs:
           BODY="The scheduled forward-compatibility run failed. This usually means an upcoming PHP (\`nightly\`) or WordPress (\`trunk\`) release breaks the plugin or its test suite.
 
           Review the run and decide whether the plugin needs changes: ${RUN_URL}"
-          gh issue create --repo "${{ github.repository }}" --title "[version-monitor] Forward-compatibility tests are failing" --body "${BODY}" --label version-monitor,forward-compat
+          gh issue create --repo "${REPO}" --title "[version-monitor] Forward-compatibility tests are failing" --body "${BODY}" --label version-monitor,forward-compat
 
   version-watch:
     name: Detect new stable releases
@@ -132,8 +135,10 @@ jobs:
             exit 0
           fi
 
-          gh label create version-monitor --color FBCA04 --description "Automated version monitor" 2>/dev/null || true
-          gh label create new-release --color 0E8A16 --description "New stable PHP/WordPress release available" 2>/dev/null || true
+          REPO="${{ github.repository }}"
+          # No checkout in this job, so every gh call needs an explicit --repo.
+          gh label create version-monitor --repo "${REPO}" --color FBCA04 --description "Automated version monitor" 2>/dev/null || true
+          gh label create new-release --repo "${REPO}" --color 0E8A16 --description "New stable PHP/WordPress release available" 2>/dev/null || true
 
           # A signature of the latest detected minors. The same signature on a
           # later run means nothing new shipped, so the job stays silent; a
@@ -142,18 +147,18 @@ jobs:
           TITLE="[version-monitor] New stable PHP/WordPress release available"
           BODY=$(printf 'A new stable release was detected that the CI matrix does not yet cover:\n\n%bUpdate %s (matrix) and %s (Tested up to / Requires PHP), then bump SUPPORTED_MAX_* in this workflow.\n\n<!-- version-monitor-state: %s -->' "$behind" ".github/workflows/test.yml" "readme.txt" "$SIG")
 
-          EXISTING=$(gh issue list --repo "${{ github.repository }}" --state open --label new-release --json number --jq '.[0].number // empty')
+          EXISTING=$(gh issue list --repo "${REPO}" --state open --label new-release --json number --jq '.[0].number // empty')
           if [ -z "${EXISTING}" ]; then
-            gh issue create --repo "${{ github.repository }}" --title "${TITLE}" --body "${BODY}" --label version-monitor,new-release
+            gh issue create --repo "${REPO}" --title "${TITLE}" --body "${BODY}" --label version-monitor,new-release
             echo "Opened a new tracking issue (state: ${SIG})."
           else
-            PREV_BODY=$(gh issue view "${EXISTING}" --repo "${{ github.repository }}" --json body --jq '.body')
+            PREV_BODY=$(gh issue view "${EXISTING}" --repo "${REPO}" --json body --jq '.body')
             RECORDED=$(printf '%s\n' "$PREV_BODY" | sed -n 's/.*version-monitor-state: \(.*\) -->.*/\1/p' | head -1)
             if [ "${RECORDED}" = "${SIG}" ]; then
               echo "Issue #${EXISTING} already reflects the current releases (${SIG}); staying silent."
             else
-              gh issue comment "${EXISTING}" --repo "${{ github.repository }}" --body "$(printf 'A newer stable release has appeared since this issue was opened:\n\n%bUpdate the matrix and readme accordingly.' "$behind")"
-              gh issue edit "${EXISTING}" --repo "${{ github.repository }}" --body "${BODY}"
+              gh issue comment "${EXISTING}" --repo "${REPO}" --body "$(printf 'A newer stable release has appeared since this issue was opened:\n\n%bUpdate the matrix and readme accordingly.' "$behind")"
+              gh issue edit "${EXISTING}" --repo "${REPO}" --body "${BODY}"
               echo "Commented on #${EXISTING} (state ${RECORDED:-none} -> ${SIG})."
             fi
           fi
