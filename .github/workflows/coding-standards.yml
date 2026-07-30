@@ -18,7 +18,7 @@ jobs:
     name: Coding standards & security (PHPCS)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -28,7 +28,7 @@ jobs:
           tools: composer
 
       - name: Install dependencies
-        uses: ramsey/composer-install@v3
+        uses: ramsey/composer-install@v4
 
       - name: Run PHPCS (WordPress standards + PHP compatibility)
         run: composer phpcs
