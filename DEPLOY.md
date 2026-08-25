@@ -98,12 +98,24 @@ svn ls https://plugins.svn.wordpress.org/lookit-cf-purge/tags/
 | `tag already exists` on SVN | That version already shipped. Bump to a higher version and release again. |
 | Code deployed but **assets** failed | The code is live; only the asset sync needs re-running. Re-run the asset sync (see below) — do **not** re-run the whole deploy job, because it would try to recreate the existing SVN tag and fail. |
 
+### Updating readme or assets without a release
+
+Changes such as **Tested up to**, screenshots, banners, or icons do **not**
+require a version bump or GitHub Release. Merge the change to `main`, then either:
+
+- let the [**Sync readme to WordPress.org**](.github/workflows/sync-readme.yml)
+  workflow run automatically when `readme.txt` or `.wordpress-org/` changes, or
+- trigger it manually under **Actions → Sync readme to WordPress.org → Run workflow**.
+
+That workflow pushes only `readme.txt` and `.wordpress-org/` to SVN (trunk and the
+current `Stable tag` readme). The downloadable plugin version stays the same.
+
 ### Re-syncing assets only
 
 Updating the icon, banners, or screenshots does **not** require a release.
-Update the files in `.wordpress-org/`, merge to `main`, and commit them to SVN
-`assets/` (e.g. with a manual `svn` commit, or by re-running the asset-update
-action against the current code).
+Update the files in `.wordpress-org/`, merge to `main`, and the
+[sync-readme workflow](.github/workflows/sync-readme.yml) will push them to SVN
+`assets/`.
 
 ### A note on immutable releases
 
