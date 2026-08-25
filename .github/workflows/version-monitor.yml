@@ -111,7 +111,7 @@ jobs:
       # covers in its required CI matrix. Bump these when you add support
       # for a newer release; the job fails until they catch up to upstream.
       SUPPORTED_MAX_PHP: "8.5"
-      SUPPORTED_MAX_WP: "7.0"
+      SUPPORTED_MAX_WP: "7.1"
     steps:
       - name: Compare supported versions against latest stable releases
         run: |
