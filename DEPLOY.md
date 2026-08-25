@@ -96,14 +96,20 @@ svn ls https://plugins.svn.wordpress.org/lookit-cf-purge/tags/
 | Test or version-check failed (nothing deployed) | If transient, re-run from the [workflow run](../../actions/workflows/deploy.yml) (**Re-run failed jobs**). If it's a real bug, fix on `main` and cut a new release. |
 | Bad/expired SVN credentials | Update the `SVN_USERNAME` / `SVN_PASSWORD` [secrets](../../settings/secrets/actions#repository-secrets), then **Re-run failed jobs** (SVN was untouched). |
 | `tag already exists` on SVN | That version already shipped. Bump to a higher version and release again. |
-| Code deployed but **assets** failed | The code is live; only the asset sync needs re-running. Re-run the asset sync (see below) — do **not** re-run the whole deploy job, because it would try to recreate the existing SVN tag and fail. |
+| Code deployed but **assets** failed | The code is live; only the asset sync needs re-running. Re-run [**Sync readme and assets to WordPress.org**](.github/workflows/sync-wordpress-org.yml) — do **not** re-run the whole deploy job, because it would try to recreate the existing SVN tag and fail. |
 
-### Re-syncing assets only
+### Updating readme or assets without a release
 
-Updating the icon, banners, or screenshots does **not** require a release.
-Update the files in `.wordpress-org/`, merge to `main`, and commit them to SVN
-`assets/` (e.g. with a manual `svn` commit, or by re-running the asset-update
-action against the current code).
+Changes such as **Tested up to**, screenshots, banners, or icons do **not**
+require a version bump or GitHub Release. Merge the change to `main`, then either:
+
+- let the [**Sync readme and assets to WordPress.org**](.github/workflows/sync-wordpress-org.yml)
+  workflow run automatically when `readme.txt` or `.wordpress-org/` changes, or
+- trigger it manually under **Actions → Sync readme and assets to WordPress.org → Run workflow**.
+
+That workflow pushes only `readme.txt` and `.wordpress-org/` to SVN (trunk, the
+current `Stable tag` readme, and `assets/`). The downloadable plugin version
+stays the same.
 
 ### A note on immutable releases
 

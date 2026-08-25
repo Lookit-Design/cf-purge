@@ -1,0 +1,34 @@
+name: Sync readme and assets to WordPress.org
+
+# Pushes readme.txt and .wordpress-org/ to SVN without a new plugin version.
+# Use after merging store-metadata updates such as Tested up to, icons, or banners.
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'readme.txt'
+      - '.wordpress-org/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sync-wordpress-org-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Sync readme and assets to WordPress.org
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: WordPress.org plugin asset/readme update
+        uses: 10up/action-wordpress-plugin-asset-update@stable
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: lookit-cf-purge
+          IGNORE_OTHER_FILES: true
