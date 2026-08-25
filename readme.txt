@@ -4,7 +4,7 @@ Tags: cloudflare, cache, purge, cdn, admin bar
 Requires at least: 5.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -160,6 +160,9 @@ This service is provided by Cloudflare, Inc.:
 
 == Changelog ==
 
+= 1.0.1 =
+* Tested up to WordPress 7.1
+
 = 1.0.0 =
 * Initial release
 * Context-aware single-URL purge from admin bar
@@ -171,6 +174,9 @@ This service is provided by Cloudflare, Inc.:
 * Toast notification confirms success or failure after every purge action
 
 == Upgrade Notice ==
+
+= 1.0.1 =
+Tested up to WordPress 7.1.
 
 = 1.0.0 =
 Initial release.

@@ -3,7 +3,7 @@
  * Plugin Name:  Lookit Cloudflare Cache Purge
 
  * Description:  Adds a surgical single-URL Cloudflare cache purge button to the wp-admin admin bar.
- * Version:      1.0.0
+ * Version:      1.0.1
  * Author:       Lookit Design
  * Author URI:   https://lookitdesign.com
  * License:      GPL-2.0+
@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'LOOKIT_CF_PURGE_VERSION', '1.0.0' );
+define( 'LOOKIT_CF_PURGE_VERSION', '1.0.1' );
 define( 'LOOKIT_CF_PURGE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'LOOKIT_CF_PURGE_URL', plugin_dir_url( __FILE__ ) );
 
