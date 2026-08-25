@@ -103,19 +103,13 @@ svn ls https://plugins.svn.wordpress.org/lookit-cf-purge/tags/
 Changes such as **Tested up to**, screenshots, banners, or icons do **not**
 require a version bump or GitHub Release. Merge the change to `main`, then either:
 
-- let the [**Sync readme to WordPress.org**](.github/workflows/sync-readme.yml)
+- let the [**Sync readme and assets to WordPress.org**](.github/workflows/sync-wordpress-org.yml)
   workflow run automatically when `readme.txt` or `.wordpress-org/` changes, or
-- trigger it manually under **Actions → Sync readme to WordPress.org → Run workflow**.
+- trigger it manually under **Actions → Sync readme and assets to WordPress.org → Run workflow**.
 
-That workflow pushes only `readme.txt` and `.wordpress-org/` to SVN (trunk and the
-current `Stable tag` readme). The downloadable plugin version stays the same.
-
-### Re-syncing assets only
-
-Updating the icon, banners, or screenshots does **not** require a release.
-Update the files in `.wordpress-org/`, merge to `main`, and the
-[sync-readme workflow](.github/workflows/sync-readme.yml) will push them to SVN
-`assets/`.
+That workflow pushes only `readme.txt` and `.wordpress-org/` to SVN (trunk, the
+current `Stable tag` readme, and `assets/`). The downloadable plugin version
+stays the same.
 
 ### A note on immutable releases
 

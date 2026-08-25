@@ -1,7 +1,7 @@
-name: Sync readme to WordPress.org
+name: Sync readme and assets to WordPress.org
 
-# Pushes readme.txt and .wordpress-org assets to SVN without a new plugin version.
-# Use after merging readme-only updates such as Tested up to.
+# Pushes readme.txt and .wordpress-org/ to SVN without a new plugin version.
+# Use after merging store-metadata updates such as Tested up to, icons, or banners.
 on:
   workflow_dispatch:
   push:
@@ -15,7 +15,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: sync-readme-${{ github.repository }}
+  group: sync-wordpress-org-${{ github.repository }}
   cancel-in-progress: false
 
 jobs:
