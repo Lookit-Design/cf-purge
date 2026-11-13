@@ -95,15 +95,6 @@ variants in one request, using Cloudflare's `CF-Device-Type` purge header.
 Keys that also vary by country, language, cookies, or other headers require those
 additional values and are not covered by this change.
 
-Use `lookit_cf_purge_device_types` to select a subset of `desktop`, `mobile`, and
-`tablet`. Unknown values and duplicates are ignored. Return an empty array to
-send only the default cache-key entry:
-
-```php
-add_filter( 'lookit_cf_purge_device_types', '__return_empty_array' );
-```
-
-The filter receives the device types and the URL being purged.
 
 ## Why Single-URL Purging
 
