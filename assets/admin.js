@@ -55,7 +55,7 @@
 			if (scope() === 'prefix') {
 				try {
 					var url = target();
-					preview.textContent = __('Purges every URL starting with %s\nIncludes child pages, all query strings, and all cache variants.', 'lookit-cf-purge').replace('%s', url.host + url.pathname) + (url.pathname.endsWith('/') ? '' : '\n' + __('Also matches other names starting with this path, not just child pages.', 'lookit-cf-purge'));
+					preview.textContent = __('Affected URL prefix: %s', 'lookit-cf-purge').replace('%s', url.host + url.pathname) + (url.pathname.endsWith('/') ? '' : '\n' + __('Also matches other names starting with this path, not just child pages.', 'lookit-cf-purge'));
 				} catch (error) {
 					preview.textContent = error.message;
 					submit.disabled = true;
