@@ -7,8 +7,11 @@
 
 class Test_Lookit_CF_Purge_Ajax_Handler extends WP_Ajax_UnitTestCase {
 
+	private $request_body = array();
+
 	public function set_up() {
 		parent::set_up();
+		$this->request_body = array();
 		update_option(
 			Lookit_CF_Purge_Settings::OPTION_KEY,
 			array(
@@ -26,7 +29,8 @@ class Test_Lookit_CF_Purge_Ajax_Handler extends WP_Ajax_UnitTestCase {
 		parent::tear_down();
 	}
 
-	public function cloudflare_success() {
+	public function cloudflare_success( $preempt, $args ) {
+		$this->request_body = json_decode( $args['body'], true );
 		return array(
 			'response' => array( 'code' => 200 ),
 			'body'     => wp_json_encode( array( 'success' => true ) ),
@@ -54,70 +58,110 @@ class Test_Lookit_CF_Purge_Ajax_Handler extends WP_Ajax_UnitTestCase {
 		return json_decode( $this->_last_response, true );
 	}
 
-	public function test_purge_url_succeeds_for_admin_with_valid_same_site_url() {
+	/**
+	 * @dataProvider url_actions_provider
+	 */
+	public function test_purge_url_succeeds_for_admin_with_valid_same_site_url( string $action ) {
 		$this->_setRole( 'administrator' );
 		$this->set_nonce();
 		$_POST['url'] = home_url( '/sample-page/' );
 
-		$response = $this->dispatch( 'lookit_cf_purge_url' );
+		$response = $this->dispatch( $action );
 
 		$this->assertTrue( $response['success'] );
+		if ( 'lookit_cf_purge_prefix' === $action ) {
+			$this->assertSame( array( 'prefixes' => array( wp_parse_url( home_url(), PHP_URL_HOST ) . '/sample-page/' ) ), $this->request_body );
+		} else {
+			$this->assertArrayHasKey( 'files', $this->request_body );
+		}
 	}
 
-	public function test_purge_url_accepts_same_site_host_with_different_case() {
+	/**
+	 * @dataProvider url_actions_provider
+	 */
+	public function test_purge_url_accepts_same_site_host_with_different_case( string $action ) {
 		$this->_setRole( 'administrator' );
 		$this->set_nonce();
 		$host         = wp_parse_url( home_url(), PHP_URL_HOST );
 		$_POST['url'] = str_replace( $host, strtoupper( $host ), home_url( '/sample-page/' ) );
 
-		$response = $this->dispatch( 'lookit_cf_purge_url' );
+		$response = $this->dispatch( $action );
 
 		$this->assertTrue( $response['success'] );
 	}
 
-	public function test_purge_url_rejects_invalid_url() {
+	/**
+	 * @dataProvider url_actions_provider
+	 */
+	public function test_purge_url_rejects_invalid_url( string $action ) {
 		$this->_setRole( 'administrator' );
 		$this->set_nonce();
 		$_POST['url'] = 'javascript:alert(1)';
 
-		$response = $this->dispatch( 'lookit_cf_purge_url' );
+		$response = $this->dispatch( $action );
 
 		$this->assertFalse( $response['success'] );
 		$this->assertStringContainsString( 'Invalid URL', $response['data'] );
 	}
 
-	public function test_purge_url_rejects_foreign_host() {
+	/**
+	 * @dataProvider url_actions_provider
+	 */
+	public function test_purge_url_rejects_foreign_host( string $action ) {
 		$this->_setRole( 'administrator' );
 		$this->set_nonce();
 		$_POST['url'] = 'https://evil.example.net/page/';
 
-		$response = $this->dispatch( 'lookit_cf_purge_url' );
+		$response = $this->dispatch( $action );
 
 		$this->assertFalse( $response['success'] );
 		$this->assertStringContainsString( 'does not belong', $response['data'] );
 	}
 
-	public function test_purge_url_rejects_bad_nonce() {
+	/**
+	 * @dataProvider url_actions_provider
+	 */
+	public function test_purge_url_rejects_bad_nonce( string $action ) {
 		$this->_setRole( 'administrator' );
 		$_POST['nonce']    = 'invalid';
 		$_REQUEST['nonce'] = 'invalid';
 		$_POST['url']      = home_url( '/sample-page/' );
 
-		$response = $this->dispatch( 'lookit_cf_purge_url' );
+		$response = $this->dispatch( $action );
 
 		$this->assertFalse( $response['success'] );
 		$this->assertStringContainsString( 'Security check', $response['data'] );
 	}
 
-	public function test_purge_url_denied_for_non_admin() {
+	/**
+	 * @dataProvider url_actions_provider
+	 */
+	public function test_purge_url_denied_for_non_admin( string $action ) {
 		$this->_setRole( 'subscriber' );
 		$this->set_nonce();
 		$_POST['url'] = home_url( '/sample-page/' );
 
-		$response = $this->dispatch( 'lookit_cf_purge_url' );
+		$response = $this->dispatch( $action );
 
 		$this->assertFalse( $response['success'] );
 		$this->assertStringContainsString( 'Permission denied', $response['data'] );
+	}
+
+	public static function url_actions_provider() {
+		return array(
+			'exact URL'                    => array( 'lookit_cf_purge_url' ),
+			'all variants and child paths' => array( 'lookit_cf_purge_prefix' ),
+		);
+	}
+
+	public function test_purge_prefix_rejects_homepage() {
+		$this->_setRole( 'administrator' );
+		$this->set_nonce();
+		$_POST['url'] = home_url( '/' );
+		$response     = $this->dispatch( 'lookit_cf_purge_prefix' );
+		$this->assertFalse( $response['success'] );
+		$this->assertStringContainsString( 'Purge Entire Site', $response['data'] );
+		$this->assertEmpty( $this->request_body );
 	}
 
 	public function test_purge_all_succeeds_for_admin() {

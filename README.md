@@ -83,6 +83,7 @@ You will also need your **Zone ID**, found on the domain's Overview page in the 
 From the **☁ CF Purge** admin bar menu:
 
 * **Purge This URL** — clears only the page you are currently on or editing. It appears whenever the plugin can resolve a canonical URL for the current view (singular posts, pages, taxonomy and author archives, the homepage, and the post editor screen).
+* **Purge URL and Child Paths** — clears all custom cache-key variants and every URL starting with the selected path, after confirming that broader scope.
 * **Purge Entire Site** — a full cache purge, behind a confirmation dialog.
 * **Or enter any URL** — type any URL on this site and purge it directly. The plugin validates that the URL matches the current site's domain.
 
@@ -93,8 +94,28 @@ A toast notification confirms success or failure after every purge.
 Single-URL purges include the default cache key and desktop, mobile, and tablet
 variants in one request, using Cloudflare's `CF-Device-Type` purge header.
 Keys that also vary by country, language, cookies, or other headers require those
-additional values and are not covered by this change.
+additional values for an exact URL purge. To clear them without listing those
+values, use **Purge URL and Child Paths**, or check **Include all cache variants
+and child paths** when entering a URL manually.
 
+
+This broader action uses [Cloudflare prefix purge](https://developers.cloudflare.com/cache/how-to/purge-cache/purge_by_prefix/).
+It clears every cached URL starting with the hostname and path, including child
+paths and all query-string versions, across custom cache-key variants such as
+country, language, and cookies. The confirmation shows the prefix before sending
+the request. For example, `/news/` also clears `/news/article/`; `/news` can match
+other URLs starting with that prefix. This is an explicit alternative to the
+existing exact URL action, not an automatic fallback.
+
+Homepage prefixes are rejected because they would clear the entire hostname;
+use **Purge Entire Site** for that scope. Query strings and fragments do not
+restrict a prefix purge. Nonstandard ports, dot segments, repeated slashes, encoded path delimiters,
+and paths with more than 31 separators are rejected. Cloudflare prefix rate limits apply (including
+limits shared across sites in the same account). With URL Transform Rules, enter
+the post-transformed origin URL. Worker-generated cache keys require the purge
+prefix to match the URL represented in the cache; arbitrary Worker mappings
+cannot be inferred by the plugin. API acceptance does not prove an object was
+cached or evicted; confirm a fresh response when diagnosing cache problems.
 
 ## Why Single-URL Purging
 

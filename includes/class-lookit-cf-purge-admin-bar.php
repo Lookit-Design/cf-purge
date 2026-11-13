@@ -36,6 +36,15 @@ class Lookit_CF_Purge_Admin_Bar {
 					'meta'   => array( 'title' => $current_url ),
 				)
 			);
+			$wp_admin_bar->add_node(
+				array(
+					'id'     => 'lookit-cf-purge-prefix',
+					'parent' => 'lookit-cf-purge-group',
+					'title'  => 'Purge URL and Child Paths',
+					'href'   => 'javascript:void(0)',
+					'meta'   => array( 'title' => 'Clear all cache variants and every URL starting with this path.' ),
+				)
+			);
 		}
 
 		$wp_admin_bar->add_node(
@@ -108,6 +117,7 @@ class Lookit_CF_Purge_Admin_Bar {
 					autocomplete="off"
 					spellcheck="false"
 				>
+				<label><input type="checkbox" id="lookit-cf-manual-prefix"> Include all cache variants and child paths</label>
 				<button id="lookit-cf-manual-btn" type="button">Purge</button>
 				<div id="lookit-cf-manual-result"></div>
 			</div>
@@ -135,26 +145,31 @@ class Lookit_CF_Purge_Admin_Bar {
 				min-width: 480px;
 			}
 			#wp-admin-bar-lookit-cf-purge-url > .ab-item,
+			#wp-admin-bar-lookit-cf-purge-prefix > .ab-item,
 			#wp-admin-bar-lookit-cf-purge-all > .ab-item {
 				color: #F6821F !important;
 				padding: 8px 16px !important;
 			}
 			#wp-admin-bar-lookit-cf-purge-url > .ab-item:hover,
+			#wp-admin-bar-lookit-cf-purge-prefix > .ab-item:hover,
 			#wp-admin-bar-lookit-cf-purge-all > .ab-item:hover {
 				background: #F6821F !important;
 				color: #fff !important;
 			}
 			#wp-admin-bar-lookit-cf-purge-url.lookit-cf-purging > .ab-item,
+			#wp-admin-bar-lookit-cf-purge-prefix.lookit-cf-purging > .ab-item,
 			#wp-admin-bar-lookit-cf-purge-all.lookit-cf-purging > .ab-item {
 				opacity: 0.6;
 				cursor: wait;
 			}
 			#wp-admin-bar-lookit-cf-purge-url.lookit-cf-success > .ab-item,
+			#wp-admin-bar-lookit-cf-purge-prefix.lookit-cf-success > .ab-item,
 			#wp-admin-bar-lookit-cf-purge-all.lookit-cf-success > .ab-item {
 				background: #46b450 !important;
 				color: #fff !important;
 			}
 			#wp-admin-bar-lookit-cf-purge-url.lookit-cf-error > .ab-item,
+			#wp-admin-bar-lookit-cf-purge-prefix.lookit-cf-error > .ab-item,
 			#wp-admin-bar-lookit-cf-purge-all.lookit-cf-error > .ab-item {
 				background: #dc3232 !important;
 				color: #fff !important;
@@ -312,6 +327,24 @@ class Lookit_CF_Purge_Admin_Bar {
 				});
 			}
 
+			function confirmPrefix( url ) {
+				var parsed;
+				try { parsed = new URL(url); } catch (err) { showToast('Invalid URL provided.', 'error'); return false; }
+				return confirm('Clear ALL cache variants and every URL starting with:\n\n' + parsed.host + parsed.pathname + '\n\nThis includes child pages and all query-string versions. Continue?');
+			}
+
+			var prefixNode = document.getElementById('wp-admin-bar-lookit-cf-purge-prefix');
+			if ( prefixNode ) {
+				var prefixLink = prefixNode.querySelector('a') || prefixNode;
+				prefixLink.addEventListener('click', function(e) {
+					e.preventDefault();
+					e.stopPropagation();
+					if ( prefixNode.classList.contains('lookit-cf-purging') || ! LOOKIT_CF.currentUrl ) return;
+					if ( ! confirmPrefix(LOOKIT_CF.currentUrl) ) return;
+					doPurge('lookit_cf_purge_prefix', LOOKIT_CF.currentUrl, prefixNode, prefixLink, 'Purge URL and Child Paths');
+				});
+			}
+
 			// ── Purge Entire Site ──────────────────────────────────────────────
 			var allNode = document.getElementById('wp-admin-bar-lookit-cf-purge-all');
 			if ( allNode ) {
@@ -329,6 +362,7 @@ class Lookit_CF_Purge_Admin_Bar {
 			var manualInput  = document.getElementById('lookit-cf-manual-url');
 			var manualBtn    = document.getElementById('lookit-cf-manual-btn');
 			var manualResult = document.getElementById('lookit-cf-manual-result');
+			var manualPrefix = document.getElementById('lookit-cf-manual-prefix');
 
 			if ( manualBtn && manualInput ) {
 				manualInput.addEventListener('click', function(e) { e.stopPropagation(); });
@@ -340,16 +374,18 @@ class Lookit_CF_Purge_Admin_Bar {
 					var url = manualInput.value.trim();
 					if ( ! url ) { manualInput.focus(); return; }
 					if ( url.indexOf('http') !== 0 ) { url = 'https://' + url; manualInput.value = url; }
+					var prefix = manualPrefix && manualPrefix.checked;
+					if ( prefix && ! confirmPrefix(url) ) return;
 					manualBtn.disabled    = true;
 					manualBtn.textContent = 'Purging…';
 					manualResult.className = '';
 					manualResult.textContent = '';
-					doAjax( 'lookit_cf_purge_url', url, function( ok, msg ) {
+					doAjax( prefix ? 'lookit_cf_purge_prefix' : 'lookit_cf_purge_url', url, function( ok, msg ) {
 						manualBtn.disabled    = false;
 						manualBtn.textContent = 'Purge';
 						if ( ok ) {
 							manualInput.value = '';
-							showToast( '✅ URL purged from Cloudflare cache', 'success' );
+							showToast( prefix ? '✅ Purge requested for all variants and child paths' : '✅ URL purged from Cloudflare cache', 'success' );
 						} else {
 							manualResult.className   = 'error';
 							manualResult.textContent = '❌ ' + msg;
@@ -371,7 +407,7 @@ class Lookit_CF_Purge_Admin_Bar {
 						showToast(
 							action === 'lookit_cf_purge_all'
 								? '✅ Entire site purged from Cloudflare cache'
-								: '✅ URL purged from Cloudflare cache',
+								: ( action === 'lookit_cf_purge_prefix' ? '✅ Purge requested for all variants and child paths' : '✅ URL purged from Cloudflare cache' ),
 							'success'
 						);
 					} else {
