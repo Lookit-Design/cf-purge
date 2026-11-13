@@ -80,21 +80,27 @@ You will also need your **Zone ID**, found on the domain's Overview page in the 
 
 ## Usage
 
-From the **☁ CF Purge** admin bar menu:
+**☁ CF Purge → Purge this page** immediately purges the current URL.
+Open **More options…** for the dialog. Its page address is prefilled;
+edit it to target another URL on the same site.
 
-* **Purge This URL** — clears only the page you are currently on or editing. It appears whenever the plugin can resolve a canonical URL for the current view (singular posts, pages, taxonomy and author archives, the homepage, and the post editor screen).
-* **Purge Entire Site** — a full cache purge, behind a confirmation dialog.
-* **Or enter any URL** — type any URL on this site and purge it directly. The plugin validates that the URL matches the current site's domain.
+* **This URL** purges its standard and device-specific cached copies.
+* **All URLs starting with this address** purges all variants and matching paths.
+* **Purge the entire site instead…** opens a separate whole-site warning.
 
-A toast notification confirms success or failure after every purge.
+The dialog reports whether Cloudflare accepted the request or returned an error.
 
 ## Device-specific cache keys
 
 Single-URL purges include the default cache key and desktop, mobile, and tablet
 variants in one request, using Cloudflare's `CF-Device-Type` purge header.
-Keys that also vary by country, language, cookies, or other headers require those
-additional values and are not covered by this change.
+For keys that also vary by country, language, cookies, or other headers, use
+**All URLs starting with this address**. This clears every
+URL starting with the selected path, including child pages and all query-string
+versions. Homepage prefixes are rejected; use **Purge the entire site instead…**.
 
+See [Cloudflare's prefix purge documentation](https://developers.cloudflare.com/cache/how-to/purge-cache/purge_by_prefix/)
+for limits and URL rewrite requirements.
 
 ## Why Single-URL Purging
 
@@ -125,7 +131,7 @@ A full FAQ is available on the [WordPress.org plugin page](https://wordpress.org
 * **Do I need the official Cloudflare plugin?** No. This plugin connects directly to the Cloudflare API and works independently.
 * **Will it change my Cloudflare zone settings?** No. It only calls the cache-purge endpoint and cannot read or modify any zone configuration.
 * **Why is my site slow for a while after a full-site purge?** That is Cloudflare's normal on-demand re-caching behavior, not a fault in the plugin — see [Why Single-URL Purging](#why-single-url-purging).
-* **Does it work with custom post types and The Events Calendar?** "Purge This URL" works for any URL WordPress can resolve a permalink for; for other paths, use the manual URL field.
+* **Does it work with custom post types and The Events Calendar?** The dialog prefills any URL WordPress can resolve; edit the address for other paths.
 
 ## Development
 
@@ -152,6 +158,13 @@ The AJAX handler tests run in a separate process group and must be invoked expli
 
 ```bash
 vendor/bin/phpunit --group ajax
+```
+
+The dialog behavior tests use the shipped PHP markup and JavaScript:
+
+```bash
+npm ci
+npm test
 ```
 
 ### Coding Standards

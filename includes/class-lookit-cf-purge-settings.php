@@ -172,10 +172,9 @@ class Lookit_CF_Purge_Settings {
 			<hr>
 			<h2><?php esc_html_e( 'How It Works', 'lookit-cf-purge' ); ?></h2>
 			<ul style="list-style:disc;margin-left:1.5em;line-height:1.8;">
-				<li><?php esc_html_e( 'When viewing any post, page, or taxonomy archive in the frontend, a "Purge URL from Cloudflare" button appears in the WP Rocket admin bar menu.', 'lookit-cf-purge' ); ?></li>
-				<li><?php esc_html_e( 'Clicking it sends only the current page URL to the Cloudflare API — a surgical single-URL purge.', 'lookit-cf-purge' ); ?></li>
-				<li><?php esc_html_e( 'Your WP Rocket rules, other cached URLs, and site settings are completely unaffected.', 'lookit-cf-purge' ); ?></li>
-				<li><?php esc_html_e( 'This plugin does NOT replace WP Rocket\'s Cloudflare integration — it adds to it.', 'lookit-cf-purge' ); ?></li>
+				<li><?php esc_html_e( 'Use CF Purge → Purge this page for a one-click purge, or More options… to edit the address and choose a broader scope.', 'lookit-cf-purge' ); ?></li>
+				<li><?php esc_html_e( 'Choose this URL or all URLs starting with the address. The broader option includes child pages, query strings, and all custom cache variants.', 'lookit-cf-purge' ); ?></li>
+				<li><?php esc_html_e( 'Purging the entire site requires a separate warning step.', 'lookit-cf-purge' ); ?></li>
 			</ul>
 		</div>
 		<?php
