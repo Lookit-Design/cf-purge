@@ -332,7 +332,7 @@ class Lookit_CF_Purge_Admin_Bar {
 			function confirmPrefix( url ) {
 				var parsed;
 				try { parsed = new URL(url); } catch (err) { showToast('Invalid URL provided.', 'error'); return false; }
-				return confirm('Clear ALL cache variants and every URL starting with:\n\n' + parsed.host + parsed.pathname + '\n\nThis includes child pages and all query-string versions. Continue?');
+				return confirm('Clear every cached URL starting with:\n\n' + parsed.host + parsed.pathname + '\n\nThis includes child pages, all query-string versions, and all variants by device, country, language, cookies, or other headers.\n\nContinue?');
 			}
 
 			// ── Purge Entire Site ──────────────────────────────────────────────
