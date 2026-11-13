@@ -6,7 +6,7 @@ class Lookit_CF_Purge_Cloudflare_Api {
 	const CF_API_BASE = 'https://api.cloudflare.com/client/v4';
 
 	/**
-	 * Cloudflare's complete device-type list; desktop includes all other devices.
+	 * Complete CF-Device-Type header values; desktop includes all other devices.
 	 * Check this reference for changes to the supported categories.
 	 *
 	 * @see https://developers.cloudflare.com/automatic-platform-optimization/reference/cache-device-type/
