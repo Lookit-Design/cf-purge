@@ -166,7 +166,6 @@ This service is provided by Cloudflare, Inc.:
 
 = 1.0.1 =
 * Fix single-URL purges missing desktop, mobile, and tablet variants when Cloudflare Cache by Device Type is enabled.
-* Add the lookit_cf_purge_device_types filter to customize or disable device variant purges.
 
 = 1.0.0 =
 * Initial release

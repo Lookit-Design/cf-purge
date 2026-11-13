@@ -109,48 +109,6 @@ class Test_Lookit_CF_Purge_Cloudflare_Api extends WP_UnitTestCase {
 		);
 	}
 
-	/**
-	 * @dataProvider device_types_provider
-	 */
-	public function test_purge_url_filters_device_types( $device_types, array $expected_types ) {
-		$this->configure();
-		$this->next_response = $this->cf_success_response();
-		$filter              = function ( $defaults, $url ) use ( $device_types ) {
-			$this->assertSame( array( 'desktop', 'mobile', 'tablet' ), $defaults );
-			$this->assertSame( 'https://example.com/page/', $url );
-			return $device_types;
-		};
-		add_filter( 'lookit_cf_purge_device_types', $filter, 10, 2 );
-
-		try {
-			$result = Lookit_CF_Purge_Cloudflare_Api::purge_url( 'https://example.com/page/' );
-		} finally {
-			remove_filter( 'lookit_cf_purge_device_types', $filter, 10 );
-		}
-
-		$this->assertTrue( $result['success'] );
-		$body     = json_decode( $this->captured['args']['body'], true );
-		$expected = array( array( 'url' => 'https://example.com/page/' ) );
-		foreach ( $expected_types as $device_type ) {
-			$expected[] = array(
-				'url'     => 'https://example.com/page/',
-				'headers' => array( 'CF-Device-Type' => $device_type ),
-			);
-		}
-		$this->assertSame( $expected, $body['files'] );
-	}
-
-	public static function device_types_provider() {
-		return array(
-			'opt out'        => array( array(), array() ),
-			'subset'         => array( array( 'mobile' ), array( 'mobile' ) ),
-			'invalid values' => array( array( 'mobile', 'unknown', 'DESKTOP', null, 1, array() ), array( 'mobile' ) ),
-			'unknown only'   => array( array( 'unknown', 'MOBILE', null, array() ), array() ),
-			'duplicates'     => array( array( 'tablet', 'tablet' ), array( 'tablet' ) ),
-			'invalid return' => array( null, array() ),
-		);
-	}
-
 	public function test_purge_all_sends_purge_everything() {
 		$this->configure();
 		$this->next_response = $this->cf_success_response();
