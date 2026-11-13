@@ -6,6 +6,14 @@ class Lookit_CF_Purge_Cloudflare_Api {
 	const CF_API_BASE = 'https://api.cloudflare.com/client/v4';
 
 	/**
+	 * Cloudflare's complete device-type list; desktop includes all other devices.
+	 * Check this reference for changes to the supported categories.
+	 *
+	 * @see https://developers.cloudflare.com/automatic-platform-optimization/reference/cache-device-type/
+	 */
+	private const DEVICE_TYPES = array( 'desktop', 'mobile', 'tablet' );
+
+	/**
 	 * Purge a single URL from Cloudflare's edge cache.
 	 */
 	public static function purge_url( string $url ): array {
@@ -18,7 +26,7 @@ class Lookit_CF_Purge_Cloudflare_Api {
 		}
 
 		$files = array( array( 'url' => $url ) );
-		foreach ( array( 'desktop', 'mobile', 'tablet' ) as $device_type ) {
+		foreach ( self::DEVICE_TYPES as $device_type ) {
 			$files[] = array(
 				'url'     => $url,
 				'headers' => array( 'CF-Device-Type' => $device_type ),
