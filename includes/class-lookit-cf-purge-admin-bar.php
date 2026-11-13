@@ -10,69 +10,26 @@ class Lookit_CF_Purge_Admin_Bar {
 	}
 
 	public static function add_purge_button( WP_Admin_Bar $wp_admin_bar ) {
-
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
-
-		$current_url = self::get_current_url();
 
 		$wp_admin_bar->add_node(
 			array(
 				'id'    => 'lookit-cf-purge-group',
 				'title' => '☁ CF Purge',
 				'href'  => false,
-				'meta'  => array( 'class' => 'lookit-cf-purge-top-level' ),
 			)
 		);
-
-		if ( $current_url ) {
-			$wp_admin_bar->add_node(
-				array(
-					'id'     => 'lookit-cf-purge-url',
-					'parent' => 'lookit-cf-purge-group',
-					'title'  => 'Purge This URL',
-					'href'   => 'javascript:void(0)',
-					'meta'   => array( 'title' => $current_url ),
-				)
-			);
-			$wp_admin_bar->add_node(
-				array(
-					'id'     => 'lookit-cf-purge-prefix',
-					'parent' => 'lookit-cf-purge-group',
-					'title'  => 'Purge This URL, All Variants &amp; Child Paths',
-					'href'   => 'javascript:void(0)',
-					'meta'   => array( 'title' => 'Clear all cache variants and every URL starting with this path.' ),
-				)
-			);
-		}
-
 		$wp_admin_bar->add_node(
 			array(
-				'id'     => 'lookit-cf-purge-all',
+				'id'     => 'lookit-cf-purge-open',
 				'parent' => 'lookit-cf-purge-group',
-				'title'  => 'Purge Entire Site',
-				'href'   => 'javascript:void(0)',
+				'title'  => __( 'Clear cache…', 'lookit-cf-purge' ),
+				'href'   => '#lookit-cf-dialog',
 			)
 		);
-
-		$wp_admin_bar->add_node(
-			array(
-				'id'     => 'lookit-cf-purge-manual',
-				'parent' => 'lookit-cf-purge-group',
-				'title'  => self::manual_input_html(),
-				'href'   => false,
-				'meta'   => array( 'class' => 'lookit-cf-manual-wrap' ),
-			)
-		);
-
-		$hook = is_admin() ? 'admin_footer' : 'wp_footer';
-		add_action(
-			$hook,
-			function () use ( $current_url ) {
-				self::print_inline_data( $current_url );
-			}
-		);
+		add_action( is_admin() ? 'admin_footer' : 'wp_footer', array( __CLASS__, 'render_dialog' ) );
 	}
 
 	private static function get_current_url(): string {
@@ -106,333 +63,64 @@ class Lookit_CF_Purge_Admin_Bar {
 		return home_url( $wp->request ? '/' . $wp->request . '/' : '/' );
 	}
 
-	private static function manual_input_html(): string {
-		return '
-			<div class="lookit-cf-manual-input" onclick="event.stopPropagation();">
-				<span class="lookit-cf-manual-label">Or enter any URL:</span>
-				<input
-					type="text"
-					id="lookit-cf-manual-url"
-					placeholder="https://example.com/events/"
-					autocomplete="off"
-					spellcheck="false"
-				>
-				<label><input type="checkbox" id="lookit-cf-manual-prefix"> Include all cache variants and child paths</label>
-				<button id="lookit-cf-manual-btn" type="button">Purge</button>
-				<div id="lookit-cf-manual-result"></div>
-			</div>
-		';
-	}
-
 	public static function enqueue_assets() {
-
-		if ( ! is_admin_bar_showing() ) {
+		if ( ! is_admin_bar_showing() || ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
+
+		wp_enqueue_style( 'lookit-cf-purge', LOOKIT_CF_PURGE_URL . 'assets/admin.css', array(), LOOKIT_CF_PURGE_VERSION );
+		wp_enqueue_script( 'lookit-cf-purge', LOOKIT_CF_PURGE_URL . 'assets/admin.js', array( 'wp-i18n' ), LOOKIT_CF_PURGE_VERSION, true );
+		wp_add_inline_script(
+			'lookit-cf-purge',
+			'window.lookitCfPurge = ' . wp_json_encode(
+				array(
+					'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
+					'nonce'      => wp_create_nonce( 'lookit_cf_purge_url' ),
+					'currentUrl' => self::get_current_url(),
+					'homeUrl'    => home_url( '/' ),
+				),
+				JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+			) . ';',
+			'before'
+		);
+	}
+
+	public static function render_dialog() {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
-
-		$css = '
-			#wp-admin-bar-lookit-cf-purge-group > .ab-item {
-				color: #fff !important;
-			}
-			#wp-admin-bar-lookit-cf-purge-group:hover > .ab-item,
-			#wp-admin-bar-lookit-cf-purge-group.hover > .ab-item {
-				color: #fff !important;
-			}
-			#wp-admin-bar-lookit-cf-purge-group .ab-sub-wrapper {
-				min-width: 480px;
-			}
-			#wp-admin-bar-lookit-cf-purge-url > .ab-item,
-			#wp-admin-bar-lookit-cf-purge-prefix > .ab-item,
-			#wp-admin-bar-lookit-cf-purge-all > .ab-item {
-				color: #F6821F !important;
-				padding: 8px 16px !important;
-			}
-			#wp-admin-bar-lookit-cf-purge-url > .ab-item:hover,
-			#wp-admin-bar-lookit-cf-purge-prefix > .ab-item:hover,
-			#wp-admin-bar-lookit-cf-purge-all > .ab-item:hover {
-				background: #F6821F !important;
-				color: #fff !important;
-			}
-			#wp-admin-bar-lookit-cf-purge-url.lookit-cf-purging > .ab-item,
-			#wp-admin-bar-lookit-cf-purge-prefix.lookit-cf-purging > .ab-item,
-			#wp-admin-bar-lookit-cf-purge-all.lookit-cf-purging > .ab-item {
-				opacity: 0.6;
-				cursor: wait;
-			}
-			#wp-admin-bar-lookit-cf-purge-url.lookit-cf-success > .ab-item,
-			#wp-admin-bar-lookit-cf-purge-prefix.lookit-cf-success > .ab-item,
-			#wp-admin-bar-lookit-cf-purge-all.lookit-cf-success > .ab-item {
-				background: #46b450 !important;
-				color: #fff !important;
-			}
-			#wp-admin-bar-lookit-cf-purge-url.lookit-cf-error > .ab-item,
-			#wp-admin-bar-lookit-cf-purge-prefix.lookit-cf-error > .ab-item,
-			#wp-admin-bar-lookit-cf-purge-all.lookit-cf-error > .ab-item {
-				background: #dc3232 !important;
-				color: #fff !important;
-			}
-			#wp-admin-bar-lookit-cf-purge-manual {
-				height: auto !important;
-			}
-			#wp-admin-bar-lookit-cf-purge-manual > .ab-item {
-				height: auto !important;
-				padding: 0 !important;
-				background: transparent !important;
-				cursor: default !important;
-				display: block !important;
-			}
-			#wp-admin-bar-lookit-cf-purge-manual .lookit-cf-manual-input {
-				padding: 10px 16px 14px !important;
-				display: flex !important;
-				flex-direction: column !important;
-				gap: 7px !important;
-				min-width: 480px !important;
-				box-sizing: border-box !important;
-			}
-			#wp-admin-bar-lookit-cf-purge-manual .lookit-cf-manual-label {
-				font-size: 11px !important;
-				color: #aaa !important;
-				text-transform: none !important;
-				letter-spacing: 0.05em !important;
-				margin: 0 !important;
-				padding: 4px 0 0 0 !important;
-				display: block !important;
-			}
-			#lookit-cf-manual-url {
-				width: 100% !important;
-				padding: 6px 10px !important;
-				font-size: 12px !important;
-				border: 1px solid #444 !important;
-				border-radius: 3px !important;
-				background: #1d2327 !important;
-				color: #fff !important;
-				box-sizing: border-box !important;
-				outline: none !important;
-				margin: 0 !important;
-				display: block !important;
-			}
-			#lookit-cf-manual-url:focus {
-				border-color: #F6821F !important;
-			}
-			#lookit-cf-manual-btn {
-				display: inline-block !important;
-				width: auto !important;
-				align-self: flex-start !important;
-				padding: 5px 14px !important;
-				font-size: 12px !important;
-				font-weight: 600 !important;
-				background: #F6821F !important;
-				color: #fff !important;
-				border: none !important;
-				border-radius: 3px !important;
-				cursor: pointer !important;
-				line-height: 1.5 !important;
-				margin: 0 !important;
-				height: auto !important;
-			}
-			#lookit-cf-manual-btn:hover {
-				background: #d46e1a !important;
-			}
-			#lookit-cf-manual-btn:disabled {
-				opacity: 0.6 !important;
-				cursor: wait !important;
-			}
-			#lookit-cf-manual-result {
-				font-size: 11px !important;
-				min-height: 0 !important;
-				line-height: 1.4 !important;
-				margin: 0 !important;
-			}
-			#lookit-cf-manual-result.success { color: #46b450 !important; }
-			#lookit-cf-manual-result.error   { color: #dc3232 !important; }
-
-			/* Toast */
-			#lookit-cf-toast {
-				position: fixed !important;
-				bottom: 32px !important;
-				left: 50% !important;
-				transform: translateX(-50%) translateY(20px) !important;
-				background: #1d2327 !important;
-				color: #fff !important;
-				padding: 12px 24px !important;
-				border-radius: 4px !important;
-				font-size: 13px !important;
-				font-family: Arial, sans-serif !important;
-				font-weight: 500 !important;
-				box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
-				z-index: 999999 !important;
-				opacity: 0 !important;
-				transition: opacity 0.25s ease, transform 0.25s ease !important;
-				pointer-events: none !important;
-				white-space: nowrap !important;
-			}
-			#lookit-cf-toast.lookit-cf-toast-show {
-				opacity: 1 !important;
-				transform: translateX(-50%) translateY(0) !important;
-			}
-			#lookit-cf-toast.success {
-				border-left: 4px solid #46b450 !important;
-			}
-			#lookit-cf-toast.error {
-				border-left: 4px solid #dc3232 !important;
-			}
-		';
-		wp_add_inline_style( 'admin-bar', $css );
-	}
-
-	private static function print_inline_data( string $current_url ) {
-
-		$nonce = wp_create_nonce( 'lookit_cf_purge_url' );
 		?>
-		<script id="lookit-cf-purge-data">
-		document.addEventListener('DOMContentLoaded', function() {
-
-			var LOOKIT_CF = {
-				ajaxUrl:    <?php echo wp_json_encode( admin_url( 'admin-ajax.php' ) ); ?>,
-				nonce:      <?php echo wp_json_encode( $nonce ); ?>,
-				currentUrl: <?php echo wp_json_encode( $current_url ); ?>
-			};
-
-			// Toast
-			var toastEl = document.createElement('div');
-			toastEl.id = 'lookit-cf-toast';
-			document.body.appendChild(toastEl);
-			var toastTimer = null;
-
-			function showToast( msg, type ) {
-				if ( toastTimer ) clearTimeout( toastTimer );
-				toastEl.textContent = msg;
-				toastEl.className = type;
-				void toastEl.offsetWidth;
-				toastEl.classList.add('lookit-cf-toast-show');
-				toastTimer = setTimeout(function() {
-					toastEl.classList.remove('lookit-cf-toast-show');
-				}, 4000);
-			}
-
-			['url', 'prefix'].forEach(function(type) {
-				var node = document.getElementById('wp-admin-bar-lookit-cf-purge-' + type);
-				if ( ! node ) return;
-				var link = node.querySelector('a') || node;
-				var label = link.textContent;
-				link.addEventListener('click', function(e) {
-					e.preventDefault();
-					e.stopPropagation();
-					if ( node.classList.contains('lookit-cf-purging') || ! LOOKIT_CF.currentUrl ) return;
-					var confirmed = type === 'prefix'
-						? confirmPrefix(LOOKIT_CF.currentUrl)
-						: confirm('Purge this URL from Cloudflare edge cache?\n\n' + LOOKIT_CF.currentUrl);
-					if ( confirmed ) doPurge('lookit_cf_purge_' + type, LOOKIT_CF.currentUrl, node, link, label);
-				});
-			});
-
-			function confirmPrefix( url ) {
-				var parsed;
-				try { parsed = new URL(url); } catch (err) { showToast('Invalid URL provided.', 'error'); return false; }
-				return confirm('Clear every cached URL starting with:\n\n' + parsed.host + parsed.pathname + '\n\nThis includes child pages, all query-string versions, and all variants by device, country, language, cookies, or other headers.\n\nContinue?');
-			}
-
-			// ── Purge Entire Site ──────────────────────────────────────────────
-			var allNode = document.getElementById('wp-admin-bar-lookit-cf-purge-all');
-			if ( allNode ) {
-				var allLink = allNode.querySelector('a') || allNode;
-				allLink.addEventListener('click', function(e) {
-					e.preventDefault();
-					e.stopPropagation();
-					if ( allNode.classList.contains('lookit-cf-purging') ) return;
-					if ( ! confirm('Purge the ENTIRE Cloudflare cache for this site?\n\nThis will temporarily slow the site as pages re-cache.') ) return;
-					doPurge( 'lookit_cf_purge_all', null, allNode, allLink, 'Purge Entire Site' );
-				});
-			}
-
-			// ── Manual URL ─────────────────────────────────────────────────────
-			var manualInput  = document.getElementById('lookit-cf-manual-url');
-			var manualBtn    = document.getElementById('lookit-cf-manual-btn');
-			var manualResult = document.getElementById('lookit-cf-manual-result');
-			var manualPrefix = document.getElementById('lookit-cf-manual-prefix');
-
-			if ( manualBtn && manualInput ) {
-				manualInput.addEventListener('click', function(e) { e.stopPropagation(); });
-				manualInput.addEventListener('keydown', function(e) {
-					if ( e.key === 'Enter' ) { e.preventDefault(); manualBtn.click(); }
-				});
-				manualBtn.addEventListener('click', function(e) {
-					e.stopPropagation();
-					var url = manualInput.value.trim();
-					if ( ! url ) { manualInput.focus(); return; }
-					if ( url.indexOf('http') !== 0 ) { url = 'https://' + url; manualInput.value = url; }
-					var prefix = manualPrefix && manualPrefix.checked;
-					if ( prefix && ! confirmPrefix(url) ) return;
-					manualBtn.disabled    = true;
-					manualBtn.textContent = 'Purging…';
-					manualResult.className = '';
-					manualResult.textContent = '';
-					doAjax( prefix ? 'lookit_cf_purge_prefix' : 'lookit_cf_purge_url', url, function( ok, msg ) {
-						manualBtn.disabled    = false;
-						manualBtn.textContent = 'Purge';
-						if ( ok ) {
-							manualInput.value = '';
-							showToast( prefix ? '✅ Purge requested for all variants and child paths' : '✅ URL purged from Cloudflare cache', 'success' );
-						} else {
-							manualResult.className   = 'error';
-							manualResult.textContent = '❌ ' + msg;
-							showToast( '❌ Purge failed: ' + msg, 'error' );
-						}
-					});
-				});
-			}
-
-			// ── Helpers ────────────────────────────────────────────────────────
-			function doPurge( action, url, node, btn, resetLabel ) {
-				node.classList.add('lookit-cf-purging');
-				if ( btn ) btn.textContent = 'Purging…';
-				doAjax( action, url, function( ok, msg ) {
-					node.classList.remove('lookit-cf-purging');
-					if ( ok ) {
-						node.classList.add('lookit-cf-success');
-						if ( btn ) btn.textContent = '✅ Done';
-						showToast(
-							action === 'lookit_cf_purge_all'
-								? '✅ Entire site purged from Cloudflare cache'
-								: ( action === 'lookit_cf_purge_prefix' ? '✅ Purge requested for all variants and child paths' : '✅ URL purged from Cloudflare cache' ),
-							'success'
-						);
-					} else {
-						node.classList.add('lookit-cf-error');
-						if ( btn ) btn.textContent = '❌ Failed';
-						showToast( '❌ Cloudflare purge failed: ' + msg, 'error' );
-					}
-					setTimeout(function() {
-						node.classList.remove('lookit-cf-success','lookit-cf-error');
-						if ( btn ) btn.textContent = resetLabel;
-					}, 4000);
-				});
-			}
-
-			function doAjax( action, url, callback ) {
-				var xhr = new XMLHttpRequest();
-				xhr.open('POST', LOOKIT_CF.ajaxUrl, true);
-				xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
-				xhr.onreadystatechange = function() {
-					if ( xhr.readyState !== 4 ) return;
-					try {
-						var res = JSON.parse(xhr.responseText);
-						callback( res.success, res.data || '' );
-					} catch(err) {
-						callback( false, 'Unexpected response' );
-					}
-				};
-				var body = 'action=' + encodeURIComponent(action) +
-							'&nonce=' + encodeURIComponent(LOOKIT_CF.nonce);
-				if ( url ) body += '&url=' + encodeURIComponent(url);
-				xhr.send(body);
-			}
-
-		});
-		</script>
+		<dialog id="lookit-cf-dialog" aria-labelledby="lookit-cf-title">
+			<form id="lookit-cf-form">
+				<h2 id="lookit-cf-title"><?php esc_html_e( 'Clear Cloudflare cache', 'lookit-cf-purge' ); ?></h2>
+				<fieldset id="lookit-cf-controls">
+					<fieldset id="lookit-cf-page">
+						<label for="lookit-cf-address"><?php esc_html_e( 'Page address', 'lookit-cf-purge' ); ?></label>
+						<input id="lookit-cf-address" type="url" required autocomplete="off" spellcheck="false">
+						<fieldset class="lookit-cf-choices">
+							<legend><?php esc_html_e( 'What should we clear?', 'lookit-cf-purge' ); ?></legend>
+							<label class="lookit-cf-choice">
+								<input type="radio" name="scope" value="url" checked>
+								<span><strong><?php esc_html_e( 'This URL', 'lookit-cf-purge' ); ?></strong><small><?php esc_html_e( 'Clears its desktop, mobile, and tablet copies. Other custom cache variants may remain.', 'lookit-cf-purge' ); ?></small></span>
+							</label>
+							<label class="lookit-cf-choice">
+								<input type="radio" name="scope" value="prefix">
+								<span><strong><?php esc_html_e( 'All URLs starting with this address', 'lookit-cf-purge' ); ?></strong><small><?php esc_html_e( 'Clears all device, country, language, cookie, and header variants, including matching pages and query strings.', 'lookit-cf-purge' ); ?></small></span>
+							</label>
+						</fieldset>
+						<p id="lookit-cf-preview" class="lookit-cf-notice" aria-live="polite" hidden></p>
+					</fieldset>
+					<p id="lookit-cf-entire-warning" class="lookit-cf-notice" hidden><?php esc_html_e( 'This clears the entire Cloudflare zone, including any other hostnames in that zone. Pages may load more slowly while their caches rebuild.', 'lookit-cf-purge' ); ?></p>
+					<div class="lookit-cf-actions">
+						<button id="lookit-cf-back" type="button" hidden><?php esc_html_e( 'Go back', 'lookit-cf-purge' ); ?></button>
+						<button id="lookit-cf-cancel" type="button"><?php esc_html_e( 'Cancel', 'lookit-cf-purge' ); ?></button>
+						<button id="lookit-cf-submit" type="submit" class="lookit-cf-primary"></button>
+					</div>
+					<div id="lookit-cf-footer"><button id="lookit-cf-entire" type="button"><?php esc_html_e( 'Clear the entire site instead…', 'lookit-cf-purge' ); ?></button></div>
+				</fieldset>
+				<p id="lookit-cf-result" role="status" aria-live="polite" tabindex="-1" hidden></p>
+			</form>
+		</dialog>
 		<?php
 	}
 }

@@ -11,6 +11,9 @@ class Test_Lookit_CF_Purge_Ajax_Handler extends WP_Ajax_UnitTestCase {
 
 	public function set_up() {
 		parent::set_up();
+		remove_action( 'admin_init', '_maybe_update_core' );
+		remove_action( 'admin_init', '_maybe_update_plugins' );
+		remove_action( 'admin_init', '_maybe_update_themes' );
 		$this->request_body = array();
 		update_option(
 			Lookit_CF_Purge_Settings::OPTION_KEY,
@@ -29,7 +32,10 @@ class Test_Lookit_CF_Purge_Ajax_Handler extends WP_Ajax_UnitTestCase {
 		parent::tear_down();
 	}
 
-	public function cloudflare_success( $preempt, $args ) {
+	public function cloudflare_success( $preempt, $args, $url ) {
+		if ( 0 !== strpos( $url, 'https://api.cloudflare.com/client/v4/' ) ) {
+			return new WP_Error( 'test_http_blocked', 'Only Cloudflare requests are mocked in this test.' );
+		}
 		$this->request_body = json_decode( $args['body'], true );
 		return array(
 			'response' => array( 'code' => 200 ),
