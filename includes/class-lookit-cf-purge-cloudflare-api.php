@@ -49,8 +49,6 @@ class Lookit_CF_Purge_Cloudflare_Api {
 	}
 
 	/**
-	 * Purge all cache-key variants under a URL prefix, including child paths.
-	 *
 	 * @see https://developers.cloudflare.com/cache/how-to/purge-cache/purge_by_prefix/
 	 */
 	public static function purge_prefix( string $url ): array {

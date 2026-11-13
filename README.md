@@ -93,29 +93,13 @@ A toast notification confirms success or failure after every purge.
 
 Single-URL purges include the default cache key and desktop, mobile, and tablet
 variants in one request, using Cloudflare's `CF-Device-Type` purge header.
-Keys that also vary by country, language, cookies, or other headers require those
-additional values for an exact URL purge. To clear them without listing those
-values, use **Purge URL and Child Paths**, or check **Include all cache variants
-and child paths** when entering a URL manually.
+For keys that also vary by country, language, cookies, or other headers, use
+**Purge URL and Child Paths** (also available for manual URLs). This clears every
+URL starting with the selected path, including child pages and all query-string
+versions. Homepage prefixes are rejected; use **Purge Entire Site** instead.
 
-
-This broader action uses [Cloudflare prefix purge](https://developers.cloudflare.com/cache/how-to/purge-cache/purge_by_prefix/).
-It clears every cached URL starting with the hostname and path, including child
-paths and all query-string versions, across custom cache-key variants such as
-country, language, and cookies. The confirmation shows the prefix before sending
-the request. For example, `/news/` also clears `/news/article/`; `/news` can match
-other URLs starting with that prefix. This is an explicit alternative to the
-existing exact URL action, not an automatic fallback.
-
-Homepage prefixes are rejected because they would clear the entire hostname;
-use **Purge Entire Site** for that scope. Query strings and fragments do not
-restrict a prefix purge. Nonstandard ports, dot segments, repeated slashes, encoded path delimiters,
-and paths with more than 31 separators are rejected. Cloudflare prefix rate limits apply (including
-limits shared across sites in the same account). With URL Transform Rules, enter
-the post-transformed origin URL. Worker-generated cache keys require the purge
-prefix to match the URL represented in the cache; arbitrary Worker mappings
-cannot be inferred by the plugin. API acceptance does not prove an object was
-cached or evicted; confirm a fresh response when diagnosing cache problems.
+See [Cloudflare's prefix purge documentation](https://developers.cloudflare.com/cache/how-to/purge-cache/purge_by_prefix/)
+for limits and URL rewrite requirements.
 
 ## Why Single-URL Purging
 

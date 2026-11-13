@@ -313,36 +313,26 @@ class Lookit_CF_Purge_Admin_Bar {
 				}, 4000);
 			}
 
-			// ── Purge This URL ─────────────────────────────────────────────────
-			var urlNode = document.getElementById('wp-admin-bar-lookit-cf-purge-url');
-			if ( urlNode ) {
-				var urlLink = urlNode.querySelector('a') || urlNode;
-				urlLink.addEventListener('click', function(e) {
+			['url', 'prefix'].forEach(function(type) {
+				var node = document.getElementById('wp-admin-bar-lookit-cf-purge-' + type);
+				if ( ! node ) return;
+				var link = node.querySelector('a') || node;
+				var label = link.textContent;
+				link.addEventListener('click', function(e) {
 					e.preventDefault();
 					e.stopPropagation();
-					if ( urlNode.classList.contains('lookit-cf-purging') ) return;
-					if ( ! LOOKIT_CF.currentUrl ) return;
-					if ( ! confirm('Purge this URL from Cloudflare edge cache?\n\n' + LOOKIT_CF.currentUrl) ) return;
-					doPurge( 'lookit_cf_purge_url', LOOKIT_CF.currentUrl, urlNode, urlLink, 'Purge This URL' );
+					if ( node.classList.contains('lookit-cf-purging') || ! LOOKIT_CF.currentUrl ) return;
+					var confirmed = type === 'prefix'
+						? confirmPrefix(LOOKIT_CF.currentUrl)
+						: confirm('Purge this URL from Cloudflare edge cache?\n\n' + LOOKIT_CF.currentUrl);
+					if ( confirmed ) doPurge('lookit_cf_purge_' + type, LOOKIT_CF.currentUrl, node, link, label);
 				});
-			}
+			});
 
 			function confirmPrefix( url ) {
 				var parsed;
 				try { parsed = new URL(url); } catch (err) { showToast('Invalid URL provided.', 'error'); return false; }
 				return confirm('Clear ALL cache variants and every URL starting with:\n\n' + parsed.host + parsed.pathname + '\n\nThis includes child pages and all query-string versions. Continue?');
-			}
-
-			var prefixNode = document.getElementById('wp-admin-bar-lookit-cf-purge-prefix');
-			if ( prefixNode ) {
-				var prefixLink = prefixNode.querySelector('a') || prefixNode;
-				prefixLink.addEventListener('click', function(e) {
-					e.preventDefault();
-					e.stopPropagation();
-					if ( prefixNode.classList.contains('lookit-cf-purging') || ! LOOKIT_CF.currentUrl ) return;
-					if ( ! confirmPrefix(LOOKIT_CF.currentUrl) ) return;
-					doPurge('lookit_cf_purge_prefix', LOOKIT_CF.currentUrl, prefixNode, prefixLink, 'Purge URL and Child Paths');
-				});
 			}
 
 			// ── Purge Entire Site ──────────────────────────────────────────────

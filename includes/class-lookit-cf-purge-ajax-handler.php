@@ -5,19 +5,12 @@ class Lookit_CF_Purge_Ajax_Handler {
 
 	public static function init() {
 		add_action( 'wp_ajax_lookit_cf_purge_url', array( __CLASS__, 'handle_purge_url' ) );
-		add_action( 'wp_ajax_lookit_cf_purge_prefix', array( __CLASS__, 'handle_purge_prefix' ) );
+		add_action( 'wp_ajax_lookit_cf_purge_prefix', array( __CLASS__, 'handle_purge_url' ) );
 		add_action( 'wp_ajax_lookit_cf_purge_all', array( __CLASS__, 'handle_purge_all' ) );
 	}
 
 	public static function handle_purge_url() {
-		self::handle_url( false );
-	}
-
-	public static function handle_purge_prefix() {
-		self::handle_url( true );
-	}
-
-	private static function handle_url( bool $prefix ) {
+		$prefix = 'wp_ajax_lookit_cf_purge_prefix' === current_action();
 
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( 'Permission denied.', 403 );
