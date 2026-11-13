@@ -4,7 +4,7 @@ Tags: cloudflare, cache, purge, cdn, admin bar
 Requires at least: 5.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -97,6 +97,10 @@ No. This plugin connects directly to the Cloudflare API and does not depend on a
 
 That is Cloudflare's normal behavior, not a fault in the plugin. A full purge empties every cached page, and each page is only re-cached the next time it is requested. Until then, requests go back to your origin server and render at full (slow) speed, and pages with little traffic stay uncached the longest. There is no way within Cloudflare to pre-warm the cache. This is exactly why the plugin defaults to single-URL purging — so you clear only what you changed and leave the rest of your cache warm.
 
+= Does this support Cache by Device Type? =
+
+Yes. Single-URL purges include the default cache key plus desktop, mobile, and tablet variants in one request. Custom keys that also vary by country, language, cookies, or other headers need those additional values and are not covered by device variants alone.
+
 = Will this affect my Cloudflare zone settings? =
 
 No. This plugin only calls Cloudflare's cache purge endpoint. It cannot read or modify any zone settings, WAF rules, DNS records, or any other configuration.
@@ -159,6 +163,10 @@ This service is provided by Cloudflare, Inc.:
 5. The toast notification confirming a successful purge
 
 == Changelog ==
+
+= 1.0.1 =
+* Fix single-URL purges missing desktop, mobile, and tablet variants when Cloudflare Cache by Device Type is enabled.
+* Add the lookit_cf_purge_device_types filter to customize or disable device variant purges.
 
 = 1.0.0 =
 * Initial release
