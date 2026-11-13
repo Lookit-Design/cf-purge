@@ -40,7 +40,7 @@ class Lookit_CF_Purge_Admin_Bar {
 				array(
 					'id'     => 'lookit-cf-purge-prefix',
 					'parent' => 'lookit-cf-purge-group',
-					'title'  => 'Purge URL and Child Paths',
+					'title'  => 'Purge This URL, All Variants &amp; Child Paths',
 					'href'   => 'javascript:void(0)',
 					'meta'   => array( 'title' => 'Clear all cache variants and every URL starting with this path.' ),
 				)

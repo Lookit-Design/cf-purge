@@ -83,7 +83,7 @@ You will also need your **Zone ID**, found on the domain's Overview page in the 
 From the **☁ CF Purge** admin bar menu:
 
 * **Purge This URL** — clears only the page you are currently on or editing. It appears whenever the plugin can resolve a canonical URL for the current view (singular posts, pages, taxonomy and author archives, the homepage, and the post editor screen).
-* **Purge URL and Child Paths** — clears all custom cache-key variants and every URL starting with the selected path, after confirming that broader scope.
+* **Purge This URL, All Variants & Child Paths** — clears all custom cache-key variants and every URL starting with the selected path, after confirming that broader scope.
 * **Purge Entire Site** — a full cache purge, behind a confirmation dialog.
 * **Or enter any URL** — type any URL on this site and purge it directly. The plugin validates that the URL matches the current site's domain.
 
@@ -94,7 +94,7 @@ A toast notification confirms success or failure after every purge.
 Single-URL purges include the default cache key and desktop, mobile, and tablet
 variants in one request, using Cloudflare's `CF-Device-Type` purge header.
 For keys that also vary by country, language, cookies, or other headers, use
-**Purge URL and Child Paths** (also available for manual URLs). This clears every
+**Purge This URL, All Variants & Child Paths** (also available for manual URLs). This clears every
 URL starting with the selected path, including child pages and all query-string
 versions. Homepage prefixes are rejected; use **Purge Entire Site** instead.
 
