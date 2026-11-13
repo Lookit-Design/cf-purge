@@ -89,7 +89,24 @@ class Test_Lookit_CF_Purge_Cloudflare_Api extends WP_UnitTestCase {
 		$this->assertSame( 'Bearer test-token', $this->captured['args']['headers']['Authorization'] );
 
 		$body = json_decode( $this->captured['args']['body'], true );
-		$this->assertSame( array( 'https://example.com/page/' ), $body['files'] );
+		$this->assertSame(
+			array(
+				array( 'url' => 'https://example.com/page/' ),
+				array(
+					'url'     => 'https://example.com/page/',
+					'headers' => array( 'CF-Device-Type' => 'desktop' ),
+				),
+				array(
+					'url'     => 'https://example.com/page/',
+					'headers' => array( 'CF-Device-Type' => 'mobile' ),
+				),
+				array(
+					'url'     => 'https://example.com/page/',
+					'headers' => array( 'CF-Device-Type' => 'tablet' ),
+				),
+			),
+			$body['files']
+		);
 	}
 
 	public function test_purge_all_sends_purge_everything() {

@@ -28,6 +28,7 @@ Supports `WordPress >= 5.9` on `PHP >= 7.4`.
   - [Creating a Scoped Cloudflare API Token](#creating-a-scoped-cloudflare-api-token)
   - [Configuration](#configuration)
 - [Usage](#usage)
+- [Device-specific Cache Keys](#device-specific-cache-keys)
 - [Why Single-URL Purging](#why-single-url-purging)
 - [Compatibility](#compatibility)
 - [Security and Privacy](#security-and-privacy)
@@ -86,6 +87,14 @@ From the **☁ CF Purge** admin bar menu:
 * **Or enter any URL** — type any URL on this site and purge it directly. The plugin validates that the URL matches the current site's domain.
 
 A toast notification confirms success or failure after every purge.
+
+## Device-specific cache keys
+
+Single-URL purges include the default cache key and desktop, mobile, and tablet
+variants in one request, using Cloudflare's `CF-Device-Type` purge header.
+Keys that also vary by country, language, cookies, or other headers require those
+additional values and are not covered by this change.
+
 
 ## Why Single-URL Purging
 
