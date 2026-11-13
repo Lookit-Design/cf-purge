@@ -21,11 +21,21 @@ class Lookit_CF_Purge_Admin_Bar {
 				'href'  => false,
 			)
 		);
+		if ( self::get_current_url() ) {
+			$wp_admin_bar->add_node(
+				array(
+					'id'     => 'lookit-cf-purge-page',
+					'parent' => 'lookit-cf-purge-group',
+					'title'  => __( 'Purge this page', 'lookit-cf-purge' ),
+					'href'   => '#',
+				)
+			);
+		}
 		$wp_admin_bar->add_node(
 			array(
 				'id'     => 'lookit-cf-purge-open',
 				'parent' => 'lookit-cf-purge-group',
-				'title'  => __( 'Clear cache…', 'lookit-cf-purge' ),
+				'title'  => __( 'More options…', 'lookit-cf-purge' ),
 				'href'   => '#lookit-cf-dialog',
 			)
 		);
@@ -92,35 +102,36 @@ class Lookit_CF_Purge_Admin_Bar {
 		?>
 		<dialog id="lookit-cf-dialog" aria-labelledby="lookit-cf-title">
 			<form id="lookit-cf-form">
-				<h2 id="lookit-cf-title"><?php esc_html_e( 'Clear Cloudflare cache', 'lookit-cf-purge' ); ?></h2>
+				<h2 id="lookit-cf-title"><?php esc_html_e( 'Purge Cloudflare cache', 'lookit-cf-purge' ); ?></h2>
 				<fieldset id="lookit-cf-controls">
 					<fieldset id="lookit-cf-page">
 						<label for="lookit-cf-address"><?php esc_html_e( 'Page address', 'lookit-cf-purge' ); ?></label>
 						<input id="lookit-cf-address" type="url" required autocomplete="off" spellcheck="false">
 						<fieldset class="lookit-cf-choices">
-							<legend><?php esc_html_e( 'What should we clear?', 'lookit-cf-purge' ); ?></legend>
+							<legend><?php esc_html_e( 'What should we purge?', 'lookit-cf-purge' ); ?></legend>
 							<label class="lookit-cf-choice">
 								<input type="radio" name="scope" value="url" checked>
-								<span><strong><?php esc_html_e( 'This URL', 'lookit-cf-purge' ); ?></strong><small><?php esc_html_e( 'Clears its desktop, mobile, and tablet copies. Other custom cache variants may remain.', 'lookit-cf-purge' ); ?></small></span>
+								<span><strong><?php esc_html_e( 'This URL', 'lookit-cf-purge' ); ?></strong><small><?php esc_html_e( 'Purges its desktop, mobile, and tablet copies. Other custom cache variants may remain.', 'lookit-cf-purge' ); ?></small></span>
 							</label>
 							<label class="lookit-cf-choice">
 								<input type="radio" name="scope" value="prefix">
-								<span><strong><?php esc_html_e( 'All URLs starting with this address', 'lookit-cf-purge' ); ?></strong><small><?php esc_html_e( 'Clears all device, country, language, cookie, and header variants, including matching pages and query strings.', 'lookit-cf-purge' ); ?></small></span>
+								<span><strong><?php esc_html_e( 'All URLs starting with this address', 'lookit-cf-purge' ); ?></strong><small><?php esc_html_e( 'Purges all device, country, language, cookie, and header variants, including matching pages and query strings.', 'lookit-cf-purge' ); ?></small></span>
 							</label>
 						</fieldset>
 						<p id="lookit-cf-preview" class="lookit-cf-notice" aria-live="polite" hidden></p>
 					</fieldset>
-					<p id="lookit-cf-entire-warning" class="lookit-cf-notice" hidden><?php esc_html_e( 'This clears the entire Cloudflare zone, including any other hostnames in that zone. Pages may load more slowly while their caches rebuild.', 'lookit-cf-purge' ); ?></p>
+					<p id="lookit-cf-entire-warning" class="lookit-cf-notice" hidden><?php esc_html_e( 'This purges the entire Cloudflare zone, including any other hostnames in that zone. Pages may load more slowly while their caches rebuild.', 'lookit-cf-purge' ); ?></p>
 					<div class="lookit-cf-actions">
 						<button id="lookit-cf-back" type="button" hidden><?php esc_html_e( 'Go back', 'lookit-cf-purge' ); ?></button>
 						<button id="lookit-cf-cancel" type="button"><?php esc_html_e( 'Cancel', 'lookit-cf-purge' ); ?></button>
 						<button id="lookit-cf-submit" type="submit" class="lookit-cf-primary"></button>
 					</div>
-					<div id="lookit-cf-footer"><button id="lookit-cf-entire" type="button"><?php esc_html_e( 'Clear the entire site instead…', 'lookit-cf-purge' ); ?></button></div>
+					<div id="lookit-cf-footer"><button id="lookit-cf-entire" type="button"><?php esc_html_e( 'Purge the entire site instead…', 'lookit-cf-purge' ); ?></button></div>
 				</fieldset>
 				<p id="lookit-cf-result" role="status" aria-live="polite" tabindex="-1" hidden></p>
 			</form>
 		</dialog>
+		<p id="lookit-cf-notification" role="status" aria-live="polite" hidden></p>
 		<?php
 	}
 }

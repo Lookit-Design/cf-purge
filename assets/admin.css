@@ -1,4 +1,6 @@
+#wp-admin-bar-lookit-cf-purge-page > .ab-item,
 #wp-admin-bar-lookit-cf-purge-open > .ab-item { color: #f6821f !important; }
+#wp-admin-bar-lookit-cf-purge-page > .ab-item:hover,
 #wp-admin-bar-lookit-cf-purge-open > .ab-item:hover { background: #f6821f !important; color: #fff !important; }
 #lookit-cf-dialog {
 	box-sizing: border-box;
@@ -51,3 +53,5 @@
 	#lookit-cf-dialog button { min-height: 44px; }
 	#lookit-cf-address { font-size: 16px; }
 }
+
+#lookit-cf-notification:not([hidden]) { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 100000; box-sizing: border-box; width: max-content; max-width: calc(100% - 32px); padding: 12px 18px; border-left: 3px solid #f6821f; border-radius: 4px; background: #1d2327; color: #fff; font: 14px/1.5 sans-serif; box-shadow: 0 4px 12px #0004; overflow-wrap: anywhere; }

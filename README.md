@@ -80,13 +80,14 @@ You will also need your **Zone ID**, found on the domain's Overview page in the 
 
 ## Usage
 
-Open **☁ CF Purge → Clear cache…**. The current page address is prefilled;
+**☁ CF Purge → Purge this page** immediately purges the current URL.
+Open **More options…** for the dialog. Its page address is prefilled;
 edit it to target another URL on the same site.
 
-* **This URL** clears its standard and device-specific cached copies.
-* **All URLs starting with this address** clears all variants and matching paths.
+* **This URL** purges its standard and device-specific cached copies.
+* **All URLs starting with this address** purges all variants and matching paths.
   The dialog shows the broader scope before you submit.
-* **Clear the entire site instead…** opens a separate whole-site warning.
+* **Purge the entire site instead…** opens a separate whole-site warning.
 
 The dialog reports whether Cloudflare accepted the request or returned an error.
 
@@ -97,7 +98,7 @@ variants in one request, using Cloudflare's `CF-Device-Type` purge header.
 For keys that also vary by country, language, cookies, or other headers, use
 **All URLs starting with this address**. This clears every
 URL starting with the selected path, including child pages and all query-string
-versions. Homepage prefixes are rejected; use **Clear the entire site instead…**.
+versions. Homepage prefixes are rejected; use **Purge the entire site instead…**.
 
 See [Cloudflare's prefix purge documentation](https://developers.cloudflare.com/cache/how-to/purge-cache/purge_by_prefix/)
 for limits and URL rewrite requirements.

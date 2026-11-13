@@ -172,9 +172,9 @@ class Lookit_CF_Purge_Settings {
 			<hr>
 			<h2><?php esc_html_e( 'How It Works', 'lookit-cf-purge' ); ?></h2>
 			<ul style="list-style:disc;margin-left:1.5em;line-height:1.8;">
-				<li><?php esc_html_e( 'Open CF Purge → Clear cache… in the admin bar. The dialog prefills the current page address, which you can edit.', 'lookit-cf-purge' ); ?></li>
+				<li><?php esc_html_e( 'Use CF Purge → Purge this page for a one-click purge, or More options… to edit the address and choose a broader scope.', 'lookit-cf-purge' ); ?></li>
 				<li><?php esc_html_e( 'Choose this URL or all URLs starting with the address. The broader option includes child pages, query strings, and all custom cache variants.', 'lookit-cf-purge' ); ?></li>
-				<li><?php esc_html_e( 'Clearing the entire site requires a separate warning step.', 'lookit-cf-purge' ); ?></li>
+				<li><?php esc_html_e( 'Purging the entire site requires a separate warning step.', 'lookit-cf-purge' ); ?></li>
 			</ul>
 		</div>
 		<?php

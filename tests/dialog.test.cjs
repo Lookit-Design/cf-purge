@@ -15,7 +15,7 @@ Lookit_CF_Purge_Admin_Bar::render_dialog();
 const script = readFileSync('assets/admin.js', 'utf8');
 
 function setup(t, options = {}) {
-	const dom = new JSDOM('<div id="wp-admin-bar-lookit-cf-purge-open"><a href="#lookit-cf-dialog">Open</a></div>' + markup, { url: 'https://example.com/news/', runScripts: 'outside-only' });
+	const dom = new JSDOM('<div id="wp-admin-bar-lookit-cf-purge-page"><a href="#">Direct action</a></div><div id="wp-admin-bar-lookit-cf-purge-open"><a href="#lookit-cf-dialog">Open</a></div>' + markup, { url: 'https://example.com/news/', runScripts: 'outside-only' });
 	t.after(() => dom.window.close());
 	const w = dom.window;
 	Object.defineProperty(w.document, 'readyState', { value: 'complete' });
@@ -158,4 +158,49 @@ test('timeout aborts the request and restores the dialog without automatically r
 	assert.equal(ui.calls[0].args.signal.aborted, true);
 	assert.equal(ui.get('controls').disabled, false);
 	assert.equal(ui.get('result').getAttribute('role'), 'alert');
+});
+
+test('one-click action purges the current page without opening or confirming the dialog', async t => {
+	const ui = setup(t);
+	ui.w.confirm = () => assert.fail('Direct purge must not require confirmation');
+	ui.open(); ui.input('https://example.com/another/'); ui.scope('prefix'); ui.click('cancel');
+	ui.w.document.querySelector('#wp-admin-bar-lookit-cf-purge-page a').click(); await flush();
+	assert.equal(ui.get('dialog').open, false);
+	assert.equal(ui.calls.length, 1);
+	assert.equal(ui.calls[0].body.get('action'), 'lookit_cf_purge_url');
+	assert.equal(ui.calls[0].body.get('url'), 'https://example.com/news/');
+	assert.equal(ui.calls[0].body.get('nonce'), 'test-nonce');
+	assert.equal(ui.get('notification').hidden, false);
+	assert.equal(ui.get('notification').getAttribute('role'), 'status');
+});
+
+test('direct purge shares the pending-request lock with the dialog', async t => {
+	let complete;
+	const ui = setup(t, { fetch: () => new Promise(resolve => { complete = resolve; }) });
+	const quick = ui.w.document.querySelector('#wp-admin-bar-lookit-cf-purge-page a');
+	quick.click(); quick.click(); ui.open(); ui.submit();
+	assert.equal(ui.calls.length, 1);
+	assert.equal(ui.get('dialog').open, false);
+	assert.equal(quick.getAttribute('aria-disabled'), 'true');
+	complete({ ok: true, json: async () => ({ success: true }) }); await flush();
+	assert.equal(quick.hasAttribute('aria-disabled'), false);
+	ui.open(); assert.equal(ui.get('dialog').open, true);
+});
+
+test('direct purge errors remain text-only outside the dialog and allow retry', async t => {
+	const message = '<img src=x onerror=alert(1)>';
+	const ui = setup(t, { fetch: async () => ({ ok: false, json: async () => ({ success: false, data: message }) }) });
+	const quick = ui.w.document.querySelector('#wp-admin-bar-lookit-cf-purge-page a');
+	quick.click(); await flush();
+	assert.equal(ui.get('notification').getAttribute('role'), 'alert');
+	assert.equal(ui.get('notification').textContent, message);
+	assert.equal(ui.get('notification').querySelector('img'), null);
+	assert.equal(ui.get('dialog').open, false);
+	quick.click(); await flush(); assert.equal(ui.calls.length, 2);
+});
+
+test('direct action cannot submit a missing current page', t => {
+	const ui = setup(t, { currentUrl: '' });
+	ui.w.document.querySelector('#wp-admin-bar-lookit-cf-purge-page a').click();
+	assert.equal(ui.calls.length, 0);
 });
