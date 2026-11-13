@@ -25,7 +25,6 @@ class Lookit_CF_Purge_Cloudflare_Api {
 		 *
 		 * Return an empty array to purge only the default cache key.
 		 *
-		 * @since 1.0.1
 		 * @param string[] $device_types Device types: desktop, mobile, tablet.
 		 * @param string   $url          URL being purged.
 		 */
