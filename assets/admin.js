@@ -14,7 +14,6 @@
 		var controls = document.getElementById('lookit-cf-controls');
 		var page = document.getElementById('lookit-cf-page');
 		var address = document.getElementById('lookit-cf-address');
-		var preview = document.getElementById('lookit-cf-preview');
 		var warning = document.getElementById('lookit-cf-entire-warning');
 		var back = document.getElementById('lookit-cf-back');
 		var submit = document.getElementById('lookit-cf-submit');
@@ -49,15 +48,13 @@
 			warning.hidden = !entire;
 			back.hidden = !entire;
 			footer.hidden = entire;
-			preview.hidden = scope() !== 'prefix';
 			submit.textContent = { url: __('Purge this URL', 'lookit-cf-purge'), prefix: __('Purge matching URLs', 'lookit-cf-purge'), all: __('Purge entire site', 'lookit-cf-purge') }[scope()];
 			submit.disabled = busy;
 			if (scope() === 'prefix') {
 				try {
-					var url = target();
-					preview.textContent = __('Affected URL prefix: %s', 'lookit-cf-purge').replace('%s', url.host + url.pathname) + (url.pathname.endsWith('/') ? '' : '\n' + __('Also matches other names starting with this path, not just child pages.', 'lookit-cf-purge'));
+					target();
 				} catch (error) {
-					preview.textContent = error.message;
+					if (dialog.open) report(error.message, true);
 					submit.disabled = true;
 				}
 			}

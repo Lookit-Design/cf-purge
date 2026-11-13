@@ -86,7 +86,6 @@ edit it to target another URL on the same site.
 
 * **This URL** purges its standard and device-specific cached copies.
 * **All URLs starting with this address** purges all variants and matching paths.
-  The dialog shows the broader scope before you submit.
 * **Purge the entire site instead…** opens a separate whole-site warning.
 
 The dialog reports whether Cloudflare accepted the request or returned an error.

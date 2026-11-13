@@ -118,7 +118,6 @@ class Lookit_CF_Purge_Admin_Bar {
 								<span><strong><?php esc_html_e( 'All URLs starting with this address', 'lookit-cf-purge' ); ?></strong><small><?php esc_html_e( 'Purges all device, country, language, cookie, and header variants, including matching pages and query strings.', 'lookit-cf-purge' ); ?></small></span>
 							</label>
 						</fieldset>
-						<p id="lookit-cf-preview" class="lookit-cf-notice" aria-live="polite" hidden></p>
 					</fieldset>
 					<p id="lookit-cf-entire-warning" class="lookit-cf-notice" hidden><?php esc_html_e( 'This purges the entire Cloudflare zone, including any other hostnames in that zone. Pages may load more slowly while their caches rebuild.', 'lookit-cf-purge' ); ?></p>
 					<div class="lookit-cf-actions">

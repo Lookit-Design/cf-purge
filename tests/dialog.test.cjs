@@ -45,13 +45,13 @@ test('opening prefills the page; cancelling sends nothing and reopening resets s
 	assert.equal(ui.get('dialog').open, true);
 	assert.equal(ui.get('address').value, 'https://example.com/news/');
 	ui.scope('prefix');
-	assert.equal(ui.get('preview').hidden, false);
+	assert.equal(ui.w.document.querySelector('[name="scope"]:checked').value, 'prefix');
 	ui.click('cancel');
 	assert.equal(ui.get('dialog').open, false);
 	assert.equal(ui.calls.length, 0);
 	ui.open();
 	assert.equal(ui.w.document.querySelector('[name="scope"]:checked').value, 'url');
-	assert.equal(ui.get('preview').hidden, true);
+	assert.equal(ui.get('result').hidden, true);
 });
 
 for (const scope of ['url', 'prefix']) {
@@ -77,7 +77,7 @@ test('whole-site clearing requires entering its warning step; going back does no
 	assert.equal(ui.get('entire-warning').hidden, false);
 	ui.click('back');
 	assert.equal(ui.get('address').value, 'https://example.com/other/');
-	assert.equal(ui.get('preview').hidden, false);
+	assert.equal(ui.w.document.querySelector('[name="scope"]:checked').value, 'prefix');
 	assert.equal(ui.calls.length, 0);
 	ui.click('entire'); ui.submit(); await flush();
 	assert.equal(ui.calls[0].body.get('action'), 'lookit_cf_purge_all');
