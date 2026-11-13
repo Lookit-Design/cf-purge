@@ -184,3 +184,20 @@ This plugin is available as open source under the terms of the [GPL-2.0-or-later
 ---
 
 _Lookit&reg; is a registered trademark of ZENOVA CORP. Cloudflare is a registered trademark of Cloudflare, Inc.; this plugin is an independent integration and is not affiliated with, sponsored by, or endorsed by Cloudflare._
+
+## Device-specific cache keys
+
+Single-URL purges include the default cache key and desktop, mobile, and tablet
+variants in one request, using Cloudflare's `CF-Device-Type` purge header.
+Keys that also vary by country, language, cookies, or other headers require those
+additional values and are not covered by this change.
+
+Use `lookit_cf_purge_device_types` to select a subset of `desktop`, `mobile`, and
+`tablet`. Unknown values and duplicates are ignored. Return an empty array to
+send only the default cache-key entry:
+
+```php
+add_filter( 'lookit_cf_purge_device_types', '__return_empty_array' );
+```
+
+The filter receives the device types and the URL being purged.
