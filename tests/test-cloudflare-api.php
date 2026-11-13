@@ -145,6 +145,7 @@ class Test_Lookit_CF_Purge_Cloudflare_Api extends WP_UnitTestCase {
 			'opt out'        => array( array(), array() ),
 			'subset'         => array( array( 'mobile' ), array( 'mobile' ) ),
 			'invalid values' => array( array( 'mobile', 'unknown', 'DESKTOP', null, 1, array() ), array( 'mobile' ) ),
+			'unknown only'   => array( array( 'unknown', 'MOBILE', null, array() ), array() ),
 			'duplicates'     => array( array( 'tablet', 'tablet' ), array( 'tablet' ) ),
 			'invalid return' => array( null, array() ),
 		);

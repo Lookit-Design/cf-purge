@@ -17,7 +17,8 @@ class Lookit_CF_Purge_Cloudflare_Api {
 			);
 		}
 
-		$files = array( array( 'url' => $url ) );
+		$files                  = array( array( 'url' => $url ) );
+		$supported_device_types = array( 'desktop', 'mobile', 'tablet' );
 
 		/**
 		 * Filter the device variants to purge alongside the default cache key.
@@ -28,10 +29,10 @@ class Lookit_CF_Purge_Cloudflare_Api {
 		 * @param string[] $device_types Device types: desktop, mobile, tablet.
 		 * @param string   $url          URL being purged.
 		 */
-		$device_types = apply_filters( 'lookit_cf_purge_device_types', array( 'desktop', 'mobile', 'tablet' ), $url );
+		$device_types = apply_filters( 'lookit_cf_purge_device_types', $supported_device_types, $url );
 		$device_types = is_array( $device_types ) ? $device_types : array();
 
-		foreach ( array( 'desktop', 'mobile', 'tablet' ) as $device_type ) {
+		foreach ( $supported_device_types as $device_type ) {
 			if ( in_array( $device_type, $device_types, true ) ) {
 				$files[] = array(
 					'url'     => $url,
