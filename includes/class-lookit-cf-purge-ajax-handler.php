@@ -5,10 +5,12 @@ class Lookit_CF_Purge_Ajax_Handler {
 
 	public static function init() {
 		add_action( 'wp_ajax_lookit_cf_purge_url', array( __CLASS__, 'handle_purge_url' ) );
+		add_action( 'wp_ajax_lookit_cf_purge_prefix', array( __CLASS__, 'handle_purge_url' ) );
 		add_action( 'wp_ajax_lookit_cf_purge_all', array( __CLASS__, 'handle_purge_all' ) );
 	}
 
 	public static function handle_purge_url() {
+		$prefix = 'wp_ajax_lookit_cf_purge_prefix' === current_action();
 
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( 'Permission denied.', 403 );
@@ -33,7 +35,7 @@ class Lookit_CF_Purge_Ajax_Handler {
 			wp_send_json_error( 'URL does not belong to this site.' );
 		}
 
-		$result = Lookit_CF_Purge_Cloudflare_Api::purge_url( $url );
+		$result = $prefix ? Lookit_CF_Purge_Cloudflare_Api::purge_prefix( $url ) : Lookit_CF_Purge_Cloudflare_Api::purge_url( $url );
 
 		if ( $result['success'] ) {
 			wp_send_json_success( $result['message'] );

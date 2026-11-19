@@ -18,3 +18,5 @@ composer.json
 composer.lock
 phpcs.xml.dist
 phpunit.xml.dist
+package.json
+package-lock.json
