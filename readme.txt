@@ -4,7 +4,7 @@ Tags: cloudflare, cache, purge, cdn, admin bar
 Requires at least: 5.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -22,13 +22,11 @@ The catch is traffic. Busy pages re-cache almost immediately. But pages that are
 
 **Lookit&reg; Cloudflare Cache Purge gives you granular control.** Instead of wiping everything and forcing your whole site back to origin speed, you clear only the page you actually changed — and every other page keeps its cache intact.
 
-From any page in WordPress — whether you are editing a post in wp-admin or viewing the live site while logged in — a lightweight **CF Purge** menu (☁) appears in the admin bar with three options:
+The **CF Purge** admin bar menu provides **Purge this page** for a one-click purge of the current URL, including its standard, desktop, mobile, and tablet cached copies.
 
-* **Purge This URL** — clears only the page you are currently on or editing
-* **Purge Entire Site** — full cache purge when you genuinely need it (with a confirmation dialog so it is never accidental)
-* **Or enter any URL** — type any URL on the site and purge it directly, without navigating to that page first
+Open **More options…** to edit the page address, choose a broader purge, or purge the entire site. The broader option purges every URL beginning with the selected address, including child pages, query-string versions, and all custom cache-key variants. Purging the entire site requires a separate confirmation.
 
-The manual URL field is especially useful for URLs that do not correspond to a standard WordPress post or page — such as custom archive paths, Events Calendar URLs, or other custom post type archives.
+The editable address also supports custom archive paths, Events Calendar URLs, and other URLs that do not correspond to a standard WordPress post or page.
 
 = Why this plugin exists =
 
@@ -40,7 +38,8 @@ This plugin does exactly that — nothing more, nothing less. It connects to Clo
 
 * Context-aware: automatically detects the URL of the post or page you are editing or viewing
 * Works in both the wp-admin editor and the frontend (when logged in)
-* Manual URL field for purging arbitrary URLs without navigating to them
+* Editable page address for purging URLs without navigating to them
+* Optional prefix purge for all custom cache-key variants and matching URLs
 * Full-site purge option with confirmation dialog
 * Lightweight — no zone settings, no DNS, no SSL toggles, no bloat
 * Secure — uses a scoped API token with minimum required permissions
@@ -97,6 +96,12 @@ No. This plugin connects directly to the Cloudflare API and does not depend on a
 
 That is Cloudflare's normal behavior, not a fault in the plugin. A full purge empties every cached page, and each page is only re-cached the next time it is requested. Until then, requests go back to your origin server and render at full (slow) speed, and pages with little traffic stay uncached the longest. There is no way within Cloudflare to pre-warm the cache. This is exactly why the plugin defaults to single-URL purging — so you clear only what you changed and leave the rest of your cache warm.
 
+= Which cached versions does a page purge include? =
+
+A single-URL purge includes the standard cache key plus desktop, mobile, and tablet variants. For cache keys that also vary by country, language, cookies, or other headers, choose the broader option in **More options…**. It also purges matching child pages and all query-string versions.
+
+Prefix purging is available on all Cloudflare plans, including Free. Matching uses the beginning of the URL: `/news/` includes its children, while `/news` may also match `/newsletter`. Homepage prefixes are blocked to avoid purging the entire hostname accidentally.
+
 = Will this affect my Cloudflare zone settings? =
 
 No. This plugin only calls Cloudflare's cache purge endpoint. It cannot read or modify any zone settings, WAF rules, DNS records, or any other configuration.
@@ -115,13 +120,13 @@ Yes. The two work together fine, and you do not need WP Rocket's Cloudflare add-
 
 There is also a reason some people prefer to leave WP Rocket's Cloudflare add-on switched off. Its "Optimal Settings" option writes changes into your Cloudflare account — it sets the Caching Level, forces a Browser Cache TTL, and turns off Rocket Loader — and it does not reliably restore your previous values if you turn it back off. If you have tuned those caching settings by hand in Cloudflare, the add-on can overwrite them. Lookit Cloudflare Cache Purge never touches any Cloudflare settings; it only calls the cache-purge endpoint, so your zone configuration is left exactly as you set it.
 
-= Why does "Purge This URL" not appear sometimes? =
+= Why does "Purge this page" not appear sometimes? =
 
 It only appears when the plugin can resolve a canonical URL for the current page. In wp-admin, this requires a post ID in the URL (i.e. you must be on the post editor screen, not the posts list). On the frontend it resolves for singular posts, pages, taxonomy archives, author archives, and the homepage.
 
 = Does this work with custom post types and plugins like The Events Calendar? =
 
-The "Purge This URL" button works for any URL WordPress can resolve a permalink for. For custom paths that do not correspond to a standard WordPress object (such as `/events/` in The Events Calendar), use the **Or enter any URL** field to type the URL directly.
+The **Purge this page** action works for URLs WordPress can resolve. For other paths, such as `/events/` in The Events Calendar, open **More options…** and edit the page address.
 
 = Is the manual URL field restricted to this site only? =
 
@@ -141,7 +146,7 @@ When you trigger a cache purge (manually or via the Test Connection button), thi
 
 * Your Cloudflare Zone ID (to identify which zone to purge)
 * Your Cloudflare API Token (for authentication)
-* The specific URL(s) to purge, or a full-site purge flag
+* The URL(s) or URL prefix to purge, or a full-site purge flag
 
 No visitor data, personal information, or site content is ever transmitted. API credentials are stored in your WordPress database and are only sent directly to Cloudflare's API endpoint (`https://api.cloudflare.com/client/v4`).
 
@@ -160,6 +165,13 @@ This service is provided by Cloudflare, Inc.:
 
 == Changelog ==
 
+= 1.1.0 =
+* Fix single-URL purges retaining desktop, mobile, and tablet cache variants.
+* Add optional prefix purging for all custom cache-key variants and matching URLs.
+* Add a More options dialog with an editable page address and a separate whole-site warning.
+* Keep one-click page purging with request feedback.
+* Accept same-site URLs regardless of hostname casing.
+
 = 1.0.0 =
 * Initial release
 * Context-aware single-URL purge from admin bar
@@ -171,6 +183,9 @@ This service is provided by Cloudflare, Inc.:
 * Toast notification confirms success or failure after every purge action
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+Adds device-variant purging, broader custom-key purging, and an editable purge dialog while preserving the one-click page action.
 
 = 1.0.0 =
 Initial release.
