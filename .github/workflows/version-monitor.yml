@@ -26,7 +26,7 @@ jobs:
       matrix:
         include:
           - { wp: 'trunk', php: 'nightly' }
-          - { wp: 'trunk', php: '8.5' }
+          - { wp: 'trunk', php: '8.6' }
           - { wp: 'latest', php: 'nightly' }
 
     services:
@@ -110,7 +110,7 @@ jobs:
       # The newest PHP and WordPress minor versions the project already
       # covers in its required CI matrix. Bump these when you add support
       # for a newer release; the job fails until they catch up to upstream.
-      SUPPORTED_MAX_PHP: "8.5"
+      SUPPORTED_MAX_PHP: "8.6"
       SUPPORTED_MAX_WP: "7.1"
     steps:
       - name: Compare supported versions against latest stable releases
